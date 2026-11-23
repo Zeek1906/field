@@ -150,7 +150,7 @@ var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladia
 var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false };
 function price(t){ return BR.pm === "m" ? t.m : t.p; }
 var SECS = [["mechanical","Powertrain and suspension"],["exterior","Exterior"],["interior","Interior and tech"],["safety","Safety and security"],["dimensions","Dimensions and capacities"],["warranty","Limited warranty"]];
-var ALIAS = { mileage:["mpg"], economy:["mpg","economy"], fuel:["fuel","mpg"], engine:["engine","cylinder","valvetrain","compressor","horsepower","torque"], hp:["hp","horsepower"], power:["horsepower","hp","torque"], tow:["tow"], seats:["seat"], seating:["seat"], screen:["touchscreen","screen","display","uconnect"], sunroof:["sunroof","moonroof","skyroof","open air"], wheels:["wheel"], tires:["tire"], size:["length","width","height","wheelbase"], dimensions:["length","width","height","wheelbase","legroom","headroom"], cargo:["cargo"], price:["price"] };
+var ALIAS = { coverage:["warranty"], carplay:["carplay","apple"], bluetooth:["bluetooth"], leather:["leather"], mileage:["mpg"], economy:["mpg","economy"], fuel:["fuel","mpg"], engine:["engine","cylinder","valvetrain","compressor","horsepower","torque"], hp:["hp","horsepower"], power:["horsepower","hp","torque"], tow:["tow"], seats:["seat"], seating:["seat"], screen:["touchscreen","screen","display","uconnect"], sunroof:["sunroof","moonroof","skyroof","open air"], wheels:["wheel"], tires:["tire"], size:["length","width","height","wheelbase"], dimensions:["length","width","height","wheelbase","legroom","headroom"], cargo:["cargo"], price:["price"] };
 var UP = { LX:1, SE:1, GT:1, SXT:1, SRT:1, RHO:1, TRX:1, SLT:1, "SLT+":1, WB:1, EXT:1, CA:1, HFE:1, "R/T":1, MOAB:1, SUV:1, LWB:1, EV:1, RWD:1, AWD:1, FWD:1, II:1, III:1, L:1, S:1, X:1 };
 
 function $(id){ return document.getElementById(id); }
@@ -242,7 +242,7 @@ function secRows(v, i, sec, f){
   v.rows.forEach(function(r){
     if (r[0] !== sec) return;
     var x = val(r, i); if (x === "" || x === undefined) return;
-    if (f && (r[2] + " " + x).toLowerCase().indexOf(f) < 0) return;
+    if (f && !fmatch(f, r[2] + " " + x + " " + r[1] + " " + secLabel(r[0]))) return;
     if (!groups[r[1]]) { groups[r[1]] = []; order.push(r[1]); }
     groups[r[1]].push([r[2], x]);
   });
@@ -280,12 +280,12 @@ function sheetBody(v, i, f){
   var st = [], op = [];
   v.pk.forEach(function(p){
     var x = p[1][i]; if (!x) return;
-    if (f && p[0].toLowerCase().indexOf(f) < 0) return;
+    if (f && !fmatch(f, p[0] + " " + (std(x) || x.charAt(0) === "S" ? "standard included equipment" : "optional available package"))) return;
     if (std(x) || x.charAt(0) === "S") st.push(p[0]); else op.push([p[0], x]);
   });
   if (st.length) h += '<details class="sec"' + (f ? " open" : "") + "><summary>Standard and included equipment <span class=\"n\">" + st.length + '</span></summary><div class="in"><div class="chips mini">' + st.map(function(n){ return '<span class="chip">' + esc(n) + "</span>"; }).join("") + "</div></div></details>";
   if (op.length) h += '<details class="sec"' + (f ? " open" : "") + "><summary>Available options and packages <span class=\"n\">" + op.length + '</span></summary><div class="in">' + op.map(function(x){ var p = priceOf(x[1]); return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + (p ? "+" + money(p) : "No charge") + "</div></div>"; }).join("") + "</div></details>";
-  if (!h) h = '<div class="empty">Nothing on this trim matches that.</div>';
+  if (!h) h = '<div class="empty">Nothing on this trim matches that. Try one word, like "warranty", "heated" or "wheels".</div>';
   return h;
 }
 function viewPickCmp(){
@@ -444,7 +444,14 @@ function viewNew(){
 
 /* ---------- ask bar ---------- */
 function tokens(q){ return q.toLowerCase().replace(/[^a-z0-9.\- ]/g," ").split(/\s+/).filter(Boolean); }
-function hit(hay, tok){ var alts = ALIAS[tok] || [tok]; return alts.some(function(a){ return hay.indexOf(a) > -1; }); }
+function hit(hay, tok){
+  var alts = (ALIAS[tok] || []).concat([tok]);
+  if (tok.length > 3 && /s$/.test(tok)) alts.push(tok.slice(0, -1));
+  if (tok.length > 4 && /ies$/.test(tok)) alts.push(tok.slice(0, -3) + "y");
+  return alts.some(function(a){ return hay.indexOf(a) > -1; });
+}
+function fmatch(f, hay){ if (!f) return true; hay = hay.toLowerCase(); return f.split(/\s+/).filter(Boolean).every(function(t){ return hit(hay, t); }); }
+function secLabel(k){ for (var j = 0; j < SECS.length; j++) if (SECS[j][0] === k) return SECS[j][1]; return k; }
 function viewAsk(q){
   var tk = tokens(q), m = models(), years = [];
   if (BR.label === "Chrysler" && tk.indexOf("voyager") > -1 && tk.indexOf("pacifica") < 0){ tk.push("pacifica"); if (!/20(25|26|27)/.test(q)) tk.push("2026"); }
