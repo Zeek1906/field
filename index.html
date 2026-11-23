@@ -571,6 +571,19 @@ function viewBrands(){
   ["jeep","ram","dodge","chrysler"].forEach(function(k){ h += '<button class="opt bt" style="background:' + BRANDS[k].color + '" data-brand="' + k + '"><div><div class="t">' + BRANDS[k].label + '</div><div class="s">' + esc(BRANDS[k].sub) + "</div></div></button>"; });
   return h + "</div>";
 }
+function loadData(k, n){
+  var url = BRANDS[k].file + (n ? "?r=" + Date.now() : "");
+  return fetch(url, n ? { cache: "no-store" } : undefined).then(function(r){
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).catch(function(err){
+    if (n >= 2) throw err;
+    return new Promise(function(res){ setTimeout(res, 700 * (n + 1)); }).then(function(){ return loadData(k, n + 1); });
+  });
+}
+function showLoadError(k, err){
+  $("main").innerHTML = '<div class="note">The ' + BRANDS[k].label + ' trim data did not load. Check your connection, then tap Try again.<div class="actions"><button class="btn" data-retry="' + k + '">Try again</button></div><div class="muted" style="font-size:12px;margin-top:6px">' + esc(String(err && err.message || err)) + "</div></div>";
+}
 function pickBrand(k, keepQ){
   BR = BRANDS[k]; D = CACHE[k] || null; setTheme(k);
   S.view = "home"; S.name = ""; S.year = 0; S.ti = -1; S.ci = -1; S.all = false; S.from = "";
@@ -578,9 +591,12 @@ function pickBrand(k, keepQ){
   $("q").placeholder = BR.ph;
   if (D){ finishLoad(); render(); return; }
   $("main").innerHTML = '<div class="empty">Loading ' + BR.label + " trims…</div>";
-  fetch(BR.file).then(function(r){ return r.json(); }).then(function(d){ CACHE[k] = d; if (BR === BRANDS[k]){ D = d; finishLoad(); render(); } }).catch(function(){
-    $("main").innerHTML = '<div class="note">The ' + BR.label + " trim data did not load. Reload the page; if it still fails, tell Derek.</div>";
-  });
+  loadData(k, 0).then(function(d){
+    CACHE[k] = d;
+    if (BR === BRANDS[k]){
+      try { D = d; finishLoad(); render(); } catch (e) { showLoadError(k, "Display error: " + (e && e.message)); }
+    }
+  }).catch(function(err){ if (BR === BRANDS[k]) showLoadError(k, err); });
 }
 function setTheme(k){
   if (k) document.documentElement.setAttribute("data-tb", k); else document.documentElement.removeAttribute("data-tb");
@@ -614,10 +630,11 @@ function render(){
   window.scrollTo(0, 0);
 }
 document.addEventListener("click", function(e){
-  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step]");
+  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step],[data-retry]");
   if (!el) return;
   if (el.dataset.brand){ pickBrand(el.dataset.brand); return; }
   if (el.dataset.go === "brands"){ BR = null; D = null; setTheme(null); S.q = ""; $("q").value = ""; $("q").placeholder = "Ask: Compass Limited towing, Charger Scat Pack, 1500 Laramie"; $("stamp").textContent = ""; $("foot").textContent = ""; render(); return; }
+  if (el.dataset.retry){ pickBrand(el.dataset.retry, true); return; }
   if (el.dataset.step){ S.via = true; S.ci = +el.dataset.step; S.view = "compare"; S.all = false; render(); return; }
   if (el.dataset.model){ S.from = ""; S.name = el.dataset.model; var ys = Object.keys(models()[S.name]).map(Number).sort(); if (!S.year || !models()[S.name][S.year]) S.year = ys[ys.length-1]; S.view = "model"; S.q = ""; $("q").value = ""; }
   else if (el.dataset.year){ S.year = +el.dataset.year; if (S.q){ var keep = S.q.replace(/\b20(25|26|27)\b/g,"").trim(); S.q = keep + " " + S.year; $("q").value = S.q; } }
@@ -638,6 +655,7 @@ document.addEventListener("input", function(e){
 });
 
 render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
 </script>
 </body>
 </html>
