@@ -122,6 +122,14 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
 .chip.g { background: #dff1df; color: #14501c; }
 .chip.l { background: #f6dede; color: #7a1a1a; }
 .btn.sec2 { background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent); }
+.up { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line); }
+.tag { flex: none; min-width: 78px; text-align: center; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 3px 6px; border-radius: 6px; background: var(--surface); color: var(--accent); }
+.up .un { font-weight: 500; line-height: 1.25; }
+.up .uc { font-size: 13px; color: var(--muted); }
+.best { font-weight: 700; color: var(--accent); background: var(--surface); border-radius: 4px; padding: 0 4px; }
+.more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.more summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.more .n { color: var(--muted); font-weight: 400; margin-left: 6px; }
 .cmphead { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; font-family: var(--font-display); font-weight: 600; font-size: 18px; padding: 8px 0; border-bottom: 2px solid var(--line); }
 @media (max-width: 420px) { h2.q { font-size: 27px; } .row { grid-template-columns: 1fr 1fr; } }
 </style>
@@ -332,32 +340,59 @@ function nextUp(v, i){
   for (k = at + 1; k < list.length; k++) if (list[k].l === list[at].l && price(list[k].t) > price(v.trims[i])) return list[k].i;
   return -1;
 }
-function talk(gain){
-  var pick = gain.filter(function(x){ return !/package|paint|badg|group|rating|ratio|axle|decal|stripe/i.test(x[0]); }).slice(0, 3).map(function(x){ return x[0]; });
-  return pick.length ? ", including " + esc(pick.join(", ")) : "";
+var NOISE = /customer preferred package|\bpaint\b|badg|gvw|rating|ratio|axle|calibration|decal/i;
+var VALUE = /leather|\bled\b|heated|ventilated|navigation|touch ?screen|inch|wheel|hard top|soft top|sunroof|camera|adaptive|cruise|tow|alpine|mcintosh|premium|remote start|wireless|keyless|passive entry|blind|collision|lock|winch|skid/i;
+var CATS = [
+  ["Interior", /leather|wrapped|knob|handle/i],
+  ["Safety", /brake|airbag|collision|assist|camera|park|alert|blind|cruise|lane|monitor|stability|traction|anti-lock|belt|pressure|rollover|detection/i],
+  ["Tech", /screen|display|uconnect|radio|audio|speaker|navigation|bluetooth|usb|carplay|android|wireless|wi-?fi|sirius|alpine|mcintosh|charging|cluster|digital|\bapp\b/i],
+  ["Capability", /tow|hitch|trailer|skid|locker|differential|transfer|suspension|shock|winch|rock|bilstein|dana|engine|turbo|hemi|v8|transmission|cooler|payload|off-road/i],
+  ["Interior", /seat|armrest|console|steering|floor|carpet|shift|visor|vanity|storage|cupholder|climate|air conditioning|headliner|cargo|interior|door trim|sunscreen/i],
+  ["Exterior", /wheel|tire|\btop\b|roof|glass|window|mirror|light|headlamp|lamp|\bled\b|fog|bumper|hood|grille|step|rail|tailgate|door|armor|spoiler|stripe|windshield|defroster|wiper|exterior|body-color/i]
+];
+function catOf(n){ for (var i = 0; i < CATS.length; i++) if (CATS[i][1].test(n)) return CATS[i][0]; return "Other"; }
+function nrm(n){ return n.toLowerCase().replace(/[®™]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+function pkMap(v, i){
+  var m = {};
+  v.pk.forEach(function(p){ var x = p[1][i]; if (!x) return; var k = nrm(p[0]); if (!m[k] || (incl(x) && !incl(m[k].x))) m[k] = { n: p[0], x: x }; });
+  return m;
 }
+function fnum(x){ var n = parseFloat(String(x).replace(/,/g, "")); return isNaN(n) ? 0 : n; }
 function stepUpCard(v, a, b){
   if (price(v.trims[a]) > price(v.trims[b])){ var sw = a; a = b; b = sw; }
-  var A = v.trims[a], B = v.trims[b], d = price(B) - price(A), nA = trimName(v, A), nB = trimName(v, B);
-  var gain = [], lose = [], paid = [], sum = 0;
-  v.pk.forEach(function(p){
-    var x = p[1][a], y = p[1][b];
-    if (incl(y) && !incl(x)){ var c = priceOf(x); gain.push([p[0], c]); if (c){ paid.push(p[0]); sum += c; } }
-    if (incl(x) && !incl(y)) lose.push(p[0]);
+  var A = v.trims[a], B = v.trims[b], d = price(B) - price(A), nA = trimName(v, A), nB = trimName(v, B), nBk = nrm(nB);
+  var mA = pkMap(v, a), mB = pkMap(v, b), gain = [], other = [];
+  Object.keys(mB).forEach(function(k){
+    if (!incl(mB[k].x) || (mA[k] && incl(mA[k].x))) return;
+    var cost = mA[k] && !incl(mA[k].x) ? priceOf(mA[k].x) : 0, it = { n: mB[k].n, cost: cost, cat: catOf(mB[k].n) };
+    if (NOISE.test(it.n) || (nBk.indexOf(nrm(it.n)) > -1)) other.push(it); else gain.push(it);
   });
-  gain.sort(function(m, n){ return n[1] - m[1]; });
-  var specs = [], eA = engine(v, a), eB = engine(v, b);
-  if (eA !== eB && (eA || eB)) specs.push(["Engine", eA || "—", eB || "—"]);
-  KEYSP.forEach(function(k){ var x = g(v, k[1], a), y = g(v, k[1], b); if (x !== y && (x || y)) specs.push([k[0], fmtV(k[1], x) || "—", fmtV(k[1], y) || "—"]); });
+  gain.forEach(function(it){ it.score = (it.cost ? 1000 + it.cost : 0) + (VALUE.test(it.n) ? 500 : 0) + (it.cat === "Other" ? 0 : 100); });
+  gain.sort(function(p, q){ return q.score - p.score || p.n.localeCompare(q.n); });
+  var top = gain.slice(0, 8), rest = gain.slice(8), sum = 0, paid = 0;
+  gain.forEach(function(it){ if (it.cost){ sum += it.cost; paid++; } });
   var h = '<div class="step"><div class="sh">Step up: ' + esc(nA) + " → " + esc(nB) + '</div>';
   h += '<div class="sd">' + (d === 0 ? "Same price" : (d > 0 ? "+" : "−") + money(Math.abs(d))) + '</div><div class="pn muted">MSRP difference, before destination, taxes and fees.</div>';
-  if (gain.length) {
-    h += "<p>" + (d > 0 ? "For " + money(d) + " more, " : "") + esc(nB) + " adds " + gain.length + " standard or included feature" + (gain.length === 1 ? "" : "s") + talk(gain) + ".</p>";
-    h += "<h4>You gain</h4>" + chips(gain.map(function(x){ return x[0]; }), "g", 24);
-    if (paid.length) h += "<p>" + paid.length + " of these cost extra on " + esc(nA) + ": about " + money(sum) + " at list price if added one by one (packages can overlap, so treat it as a ceiling).</p>";
-  } else h += "<p>No additional standard equipment found on " + esc(nB) + ".</p>";
-  if (specs.length) h += "<h4>Key specs</h4>" + '<div class="row c3"><div></div><div class="k">' + esc(nA) + '</div><div class="k">' + esc(nB) + "</div></div>" + specs.map(function(x){ return '<div class="row c3"><div class="k">' + x[0] + '</div><div class="vv">' + esc(x[1]) + '</div><div class="vv">' + esc(x[2]) + "</div></div>"; }).join("");
-  if (lose.length) h += "<h4>Standard on " + esc(nA) + " but not " + esc(nB) + "</h4>" + chips(lose, "l", 12);
+  if (top.length) {
+    h += "<p>" + (d > 0 ? "For " + money(d) + " more, " : "") + esc(nB) + " adds " + (gain.length + other.length) + " standard or included items. The ones worth saying out loud: " + esc(top.slice(0, 3).map(function(x){ return x.n; }).join(", ")) + ".</p>";
+    h += "<h4>Top upgrades</h4>" + top.map(function(it){ return '<div class="up"><span class="tag">' + it.cat + '</span><div><div class="un">' + esc(it.n) + "</div>" + (it.cost ? '<div class="uc">Costs +' + money(it.cost) + " on " + esc(nA) + "</div>" : "") + "</div></div>"; }).join("");
+    if (paid) h += '<p class="muted">' + paid + " of the upgrades are extra-cost on " + esc(nA) + ": about " + money(sum) + " at list price if added one by one. Packages can overlap, so treat it as a ceiling.</p>";
+  } else h += "<p>No clear feature upgrades. The difference is mostly body style, packages or part numbers. The full comparison is below.</p>";
+  var specs = [], eA = engine(v, a), eB = engine(v, b);
+  if (eA !== eB && (eA || eB)) specs.push(["Engine", eA || "Not listed", eB || "Not listed", 0]);
+  KEYSP.forEach(function(k){ var x = g(v, k[1], a), y = g(v, k[1], b); if (x !== y && (x || y)) specs.push([k[0], fmtV(k[1], x) || "Not listed", fmtV(k[1], y) || "Not listed", /Horsepower|Torque|Towing|Payload|Combined/.test(k[0])]); });
+  if (specs.length) h += "<h4>Key specs</h4>" + '<div class="row c3"><div></div><div class="k">' + esc(nA) + '</div><div class="k">' + esc(nB) + "</div></div>" + specs.map(function(x){
+    var fa = fnum(x[1]), fb = fnum(x[2]), ca = "", cb = "";
+    if (x[3] && fa && fb && fa !== fb){ if (fa > fb) ca = " best"; else cb = " best"; }
+    return '<div class="row c3"><div class="k">' + x[0] + '</div><div class="vv' + ca + '">' + esc(x[1]) + '</div><div class="vv' + cb + '">' + esc(x[2]) + "</div></div>";
+  }).join("");
+  if (rest.length || other.length){
+    var by = {}; rest.forEach(function(it){ (by[it.cat] = by[it.cat] || []).push(it.n); });
+    if (other.length) by["Packages and codes"] = other.map(function(it){ return it.n; });
+    h += '<details class="more"><summary>See everything else <span class="n">' + (rest.length + other.length) + "</span></summary>";
+    Object.keys(by).forEach(function(c){ h += "<h4>" + c + "</h4>" + chips(by[c], "g", 40); });
+    h += "</details>";
+  }
   return h + "</div>";
 }
 
