@@ -114,6 +114,17 @@ details.sec > summary .n { color: var(--muted); font-family: var(--font-body); f
 .muted { color: var(--muted); font-size: 14px; }
 .empty { padding: 20px 0; color: var(--muted); }
 footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+.step { background: var(--soft); border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+.step .sh { font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.step .sd { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.1; }
+.step h4 { margin: 10px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.step p { margin: 6px 0; font-size: 15px; }
+.chip.g { background: #dff1df; color: #14501c; }
+.chip.l { background: #f6dede; color: #7a1a1a; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.fgrid label { display: block; font-size: 13px; color: var(--muted); }
+.fgrid select { width: 100%; font: inherit; padding: 9px 8px; margin-top: 2px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.btn.sec2 { background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent); }
 .cmphead { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; font-family: var(--font-display); font-weight: 600; font-size: 18px; padding: 8px 0; border-bottom: 2px solid var(--line); }
 @media (max-width: 420px) { h2.q { font-size: 27px; } .row { grid-template-columns: 1fr 1fr; } }
 </style>
@@ -139,7 +150,8 @@ var BRANDS = {
   chrysler: { label: "Chrysler", color: "#063e77", site: "chrysler.com", file: "data-chrysler.json", pm: "p", sub: "Pacifica (Voyager LX is under Pacifica 2026)", order: ["Pacifica"], ph: "Ask: Pacifica Limited towing, Voyager LX fuel economy", note: " Voyager LX is a 2026 trim listed under Pacifica; the 2027 Pacifica LX replaces it." }
 };
 var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladiator wagoneer rubicon sahara mojave trailhawk", dodge:"dodge charger durango hellcat scat daytona", chrysler:"chrysler pacifica voyager", ram:"ram 1500 2500 3500 4500 5500 promaster tradesman laramie longhorn rebel" };
-var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false };
+var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false, f: null };
+function resetF(){ S.f = {}; for (var k in F0) S.f[k] = F0[k]; }
 function price(t){ return BR.pm === "m" ? t.m : t.p; }
 var SECS = [["mechanical","Powertrain and suspension"],["exterior","Exterior"],["interior","Interior and tech"],["safety","Safety and security"],["dimensions","Dimensions and capacities"],["warranty","Limited warranty"]];
 var ALIAS = { mileage:["mpg"], economy:["mpg","economy"], fuel:["fuel","mpg"], engine:["engine","cylinder","valvetrain","compressor","horsepower","torque"], hp:["hp","horsepower"], power:["horsepower","hp","torque"], tow:["tow"], seats:["seat"], seating:["seat"], screen:["touchscreen","screen","display","uconnect"], sunroof:["sunroof","moonroof","skyroof","open air"], wheels:["wheel"], tires:["tire"], size:["length","width","height","wheelbase"], dimensions:["length","width","height","wheelbase","legroom","headroom"], cargo:["cargo"], price:["price"] };
@@ -199,7 +211,7 @@ function crumbs(parts, back){
   return h + parts.map(esc).join(" › ") + "</div>";
 }
 function viewHome(){
-  var m = models(), h = crumbs([BR.label], "brands") + '<h2 class="q">Which ' + BR.label + '?</h2><div class="list">';
+  var m = models(), h = crumbs([BR.label], "brands") + '<h2 class="q">Which ' + BR.label + '?</h2><div class="actions"><button class="btn sec2" data-go="find">Find by need: seats, towing, price…</button></div><div class="list">';
   BR.order.forEach(function(n){
     if (!m[n]) return;
     var y = latestYear(n), v = m[n][y];
@@ -215,6 +227,7 @@ function viewModel(){
   var v = m[S.year], h = crumbs([BR.label, S.name], "home") + '<h2 class="q">Which ' + esc(S.name) + "?</h2>";
   if (ys.length > 1) h += '<div class="pills" role="group" aria-label="Model year">' + ys.map(function(y){ return '<button class="pill" data-year="' + y + '" aria-pressed="' + (y===S.year) + '">' + y + "</button>"; }).join("") + "</div>";
   else h += '<div class="note">' + BR.site + ' lists only the ' + ys[0] + ' model year for ' + esc(S.name) + ".</div>";
+  if (ys.length > 1) h += '<div class="actions"><button class="btn sec2" data-go="new">What is new in ' + ys[ys.length-1] + " vs " + ys[ys.length-2] + "?</button></div>";
   if (BR.label === "Chrysler" && S.name === "Pacifica" && S.year === 2026) h += '<div class="note">Voyager LX is the 2026 entry model. For 2027 the Pacifica LX takes its place.</div>';
   var list = sortedTrims(v), doors = {};
   list.forEach(function(x){ x.door = x.l ? title(x.l) : ""; doors[x.door] = 1; });
@@ -241,7 +254,7 @@ function secRows(v, i, sec, f){
 }
 function viewSheet(){
   var v = vehicle(S.name, S.year), i = S.ti, t = v.trims[i];
-  var h = crumbs([BR.label, S.name + " " + S.year, trimName(v, t)], "model");
+  var h = crumbs([BR.label, S.name + " " + S.year, trimName(v, t)], S.from || "model");
   if (BR.pm === "m"){
     h += '<div class="hero"><h2>' + esc(S.year + " " + title(t.n)) + '</h2><div class="price">' + money(t.m) + ' <span class="pn">starting MSRP</span></div>';
     if (t.m !== t.p) h += '<div class="pn">Base price ' + money(t.p) + "; the starting price includes " + money(t.m - t.p) + " of default-selected options.</div>";
@@ -252,7 +265,8 @@ function viewSheet(){
   h += '<div class="pn">Excludes destination, taxes and fees.</div></div>';
   var tiles = [["Engine", engine(v,i)], ["Horsepower", g(v,"Horsepower (hp)",i)], ["Torque", g(v,"Torque (lb.-ft.)",i)], ["Fuel economy", mpg(v,i) + (g(v,"Fuel economy - combined (mpg)",i) ? " (" + g(v,"Fuel economy - combined (mpg)",i) + " comb.)" : "")], ["Drive", g(v,"Drive type",i)], ["Towing", g(v,"Towing capacity (lbs.)",i) ? num(g(v,"Towing capacity (lbs.)",i)) + " lb" : ""], ["Payload", g(v,"Payload (lbs.)",i) ? num(g(v,"Payload (lbs.)",i)) + " lb" : ""], ["GVWR", g(v,"Gross vehicle weight rating (GVWR) (lbs.)",i) ? num(g(v,"Gross vehicle weight rating (GVWR) (lbs.)",i)) + " lb" : ""], ["Pickup box", g(v,"Pickup box cargo volume (cu.ft.)",i) ? g(v,"Pickup box cargo volume (cu.ft.)",i) + " cu ft" : ""], ["Cargo", g(v,"Interior cargo volume (cu.ft.)",i) ? g(v,"Interior cargo volume (cu.ft.)",i) + " cu ft" : ""]];
   h += '<div class="tiles">' + tiles.filter(function(x){ return x[1]; }).map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + esc(x[1]) + "</div></div>"; }).join("") + "</div>";
-  h += '<div class="actions"><button class="btn" data-go="pickcmp">Compare with another trim</button></div>';
+  var nu = nextUp(v, i);
+  h += '<div class="actions">' + (nu > -1 ? '<button class="btn" data-step="' + nu + '">What is the step up? <span class="pn">+' + money(price(v.trims[nu]) - price(t)) + ' to ' + esc(trimName(v, v.trims[nu])) + '</span></button>' : "") + '<button class="btn sec2" data-go="pickcmp">Compare with another trim</button></div>';
   h += '<input class="filter" id="tf" type="search" placeholder="Filter this trim: heated, wheels, warranty…" aria-label="Filter this trim">';
   h += '<div id="sheetbody">' + sheetBody(v, i, "") + "</div>";
   return h;
@@ -283,13 +297,15 @@ function viewPickCmp(){
   var h = crumbs([BR.label, S.name + " " + S.year, "Compare"], "sheet") + '<h2 class="q">Compare ' + esc(trimName(v, t)) + " with…</h2><div class=\"list\">";
   sortedTrims(v).forEach(function(x){
     if (x.i === S.ti) return;
-    h += '<button class="opt" data-cmp="' + x.i + '"><div><div class="t">' + esc(trimName(v, x.t)) + '</div></div><div class="p">' + money(price(x.t)) + "</div></button>";
+    var dl = price(x.t) - price(t);
+    h += '<button class="opt" data-cmp="' + x.i + '"><div><div class="t">' + esc(trimName(v, x.t)) + '</div><div class="s">' + (dl === 0 ? "Same price" : (dl > 0 ? "+" : "−") + money(Math.abs(dl)) + " vs " + esc(trimName(v, t))) + '</div></div><div class="p">' + money(price(x.t)) + "</div></button>";
   });
   return h + "</div>";
 }
 function viewCompare(){
   var v = vehicle(S.name, S.year), a = S.ti, b = S.ci;
-  var h = crumbs([BR.label, S.name + " " + S.year, "Compare"], "pickcmp");
+  var h = crumbs([BR.label, S.name + " " + S.year, "Compare"], S.via ? "sheet" : "pickcmp");
+  h += stepUpCard(v, a, b);
   h += '<div class="cmphead"><div></div><div>' + esc(trimName(v, v.trims[a])) + "</div><div>" + esc(trimName(v, v.trims[b])) + "</div></div>";
   h += '<div class="row c3"><div class="k">' + (BR.pm === "m" ? "Starting MSRP" : "Base MSRP") + '</div><div class="vv">' + money(price(v.trims[a])) + '</div><div class="vv">' + money(price(v.trims[b])) + "</div></div>";
   h += '<div class="pills" style="margin-top:12px"><button class="pill" data-diff="0" aria-pressed="' + (!S.all) + '">Differences only</button><button class="pill" data-diff="1" aria-pressed="' + S.all + '">All rows</button></div>';
@@ -307,6 +323,179 @@ function viewCompare(){
     h += "<h4>Only on " + esc(trimName(v, v.trims[b])) + '</h4><div class="chips mini">' + (onlyB.map(function(n){ return '<span class="chip">' + esc(n) + "</span>"; }).join("") || '<span class="muted">Nothing</span>') + "</div></div></details>";
   }
   if (!any) h += '<div class="empty">No spec differences found between these trims.</div>';
+  return h;
+}
+
+/* ---------- step-up ---------- */
+var KEYSP = [["Horsepower","Horsepower (hp)"],["Torque","Torque (lb.-ft.)"],["Towing","Towing capacity (lbs.)"],["Payload","Payload (lbs.)"],["Drive","Drive type"],["Seats","Seating capacity"],["Combined mpg","Fuel economy - combined (mpg)"]];
+function incl(p){ return !!p && (p.indexOf("*") > -1 || p.charAt(0) === "S"); }
+function chips(a, cls, max){ var h = '<div class="chips mini">' + a.slice(0, max).map(function(n){ return '<span class="chip ' + cls + '">' + esc(n) + "</span>"; }).join(""); if (a.length > max) h += '<span class="chip o">+' + (a.length - max) + " more</span>"; return h + "</div>"; }
+function nextUp(v, i){
+  var list = sortedTrims(v), at = -1, k;
+  for (k = 0; k < list.length; k++) if (list[k].i === i) at = k;
+  for (k = at + 1; k < list.length; k++) if (list[k].l === list[at].l && price(list[k].t) > price(v.trims[i])) return list[k].i;
+  return -1;
+}
+function talk(gain){
+  var pick = gain.filter(function(x){ return !/package|paint|badg|group|rating|ratio|axle|decal|stripe/i.test(x[0]); }).slice(0, 3).map(function(x){ return x[0]; });
+  return pick.length ? ", including " + esc(pick.join(", ")) : "";
+}
+function stepUpCard(v, a, b){
+  if (price(v.trims[a]) > price(v.trims[b])){ var sw = a; a = b; b = sw; }
+  var A = v.trims[a], B = v.trims[b], d = price(B) - price(A), nA = trimName(v, A), nB = trimName(v, B);
+  var gain = [], lose = [], paid = [], sum = 0;
+  v.pk.forEach(function(p){
+    var x = p[1][a], y = p[1][b];
+    if (incl(y) && !incl(x)){ var c = priceOf(x); gain.push([p[0], c]); if (c){ paid.push(p[0]); sum += c; } }
+    if (incl(x) && !incl(y)) lose.push(p[0]);
+  });
+  gain.sort(function(m, n){ return n[1] - m[1]; });
+  var specs = [], eA = engine(v, a), eB = engine(v, b);
+  if (eA !== eB && (eA || eB)) specs.push(["Engine", eA || "—", eB || "—"]);
+  KEYSP.forEach(function(k){ var x = g(v, k[1], a), y = g(v, k[1], b); if (x !== y && (x || y)) specs.push([k[0], fmtV(k[1], x) || "—", fmtV(k[1], y) || "—"]); });
+  var h = '<div class="step"><div class="sh">Step up: ' + esc(nA) + " → " + esc(nB) + '</div>';
+  h += '<div class="sd">' + (d === 0 ? "Same price" : (d > 0 ? "+" : "−") + money(Math.abs(d))) + '</div><div class="pn muted">MSRP difference, before destination, taxes and fees.</div>';
+  if (gain.length) {
+    h += "<p>" + (d > 0 ? "For " + money(d) + " more, " : "") + esc(nB) + " adds " + gain.length + " standard or included feature" + (gain.length === 1 ? "" : "s") + talk(gain) + ".</p>";
+    h += "<h4>You gain</h4>" + chips(gain.map(function(x){ return x[0]; }), "g", 24);
+    if (paid.length) h += "<p>" + paid.length + " of these cost extra on " + esc(nA) + ": about " + money(sum) + " at list price if added one by one (packages can overlap, so treat it as a ceiling).</p>";
+  } else h += "<p>No additional standard equipment found on " + esc(nB) + ".</p>";
+  if (specs.length) h += "<h4>Key specs</h4>" + '<div class="row c3"><div></div><div class="k">' + esc(nA) + '</div><div class="k">' + esc(nB) + "</div></div>" + specs.map(function(x){ return '<div class="row c3"><div class="k">' + x[0] + '</div><div class="vv">' + esc(x[1]) + '</div><div class="vv">' + esc(x[2]) + "</div></div>"; }).join("");
+  if (lose.length) h += "<h4>Standard on " + esc(nA) + " but not " + esc(nB) + "</h4>" + chips(lose, "l", 12);
+  return h + "</div>";
+}
+
+/* ---------- find by need ---------- */
+var F0 = { model: "", seats: 0, third: "", drive: "", tow: 0, maxp: 0, mpg: 0, heat: "", vent: "" };
+function sel(k, label, opts){
+  return "<label>" + label + '<select data-f="' + k + '">' + opts.map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(S.f[k]) === String(o[0]) ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select></label>";
+}
+function viewFind(){
+  var m = models(), names = BR.order.filter(function(n){ return m[n]; });
+  var h = crumbs([BR.label, "Find by need"], "home") + '<h2 class="q">What does the customer need?</h2><p class="muted">Searches the latest model year of each model. Set what matters, then tap a trim.</p><div class="fgrid">';
+  h += sel("model", "Model", [["", "All models"]].concat(names.map(function(n){ return [n, n]; })));
+  h += sel("seats", "Seats", [[0,"Any"],[5,"5 or more"],[6,"6 or more"],[7,"7 or more"],[8,"8 or more"]]);
+  h += sel("third", "Third row", [["","Any"],["1","Has a third row"]]);
+  h += sel("drive", "Drive", [["","Any"],["1","4WD or AWD"]]);
+  h += sel("tow", "Towing at least", [[0,"Any"],[3500,"3,500 lb"],[5000,"5,000 lb"],[7500,"7,500 lb"],[10000,"10,000 lb"],[15000,"15,000 lb"]]);
+  h += sel("maxp", "Price up to", [[0,"Any"],[35000,"$35,000"],[45000,"$45,000"],[55000,"$55,000"],[70000,"$70,000"],[90000,"$90,000"]]);
+  h += sel("mpg", "Combined mpg", [[0,"Any"],[18,"18 or better"],[20,"20 or better"],[22,"22 or better"],[25,"25 or better"]]);
+  h += sel("heat", "Heated seats", [["","Any"],["1","Yes"]]);
+  h += sel("vent", "Ventilated seats", [["","Any"],["1","Yes"]]);
+  h += '</div><div class="actions"><button class="btn sec2" data-freset="1">Reset filters</button></div><div id="fres">' + findRes() + "</div>";
+  return h;
+}
+function fnum(x){ var n = parseFloat(String(x).replace(/,/g, "")); return isNaN(n) ? 0 : n; }
+function findRes(){
+  var m = models(), f = S.f, out = [], total = 0, shown = 0, h = "";
+  BR.order.forEach(function(n){
+    if (!m[n] || (f.model && f.model !== n)) return;
+    var y = latestYear(n), v = m[n][y], rows = [];
+    v.trims.forEach(function(t, i){
+      var seats = fnum(g(v, "Seating capacity", i)), third = g(v, "3rd row seat descriptor", i), drv = g(v, "Drive type", i), ht = g(v, "Heated seats", i), vt = g(v, "Ventilated front seats", i);
+      if (f.seats && seats < f.seats) return;
+      if (f.third && (!third || /^none$/i.test(third))) return;
+      if (f.drive && !/four|all/i.test(drv)) return;
+      if (f.tow && fnum(g(v, "Towing capacity (lbs.)", i)) < f.tow) return;
+      if (f.maxp && price(t) > f.maxp) return;
+      if (f.mpg && fnum(g(v, "Fuel economy - combined (mpg)", i)) < f.mpg) return;
+      if (f.heat && (!ht || /^none$/i.test(ht))) return;
+      if (f.vent && (!vt || /^no/i.test(vt))) return;
+      rows.push({ t: t, i: i });
+    });
+    if (!rows.length) return;
+    rows.sort(function(a, b){ return price(a.t) - price(b.t); });
+    total += rows.length;
+    h += '<div class="group">' + esc(y + " " + n) + " · " + rows.length + (rows.length === 1 ? " match" : " matches") + "</div>";
+    rows.forEach(function(r){
+      if (shown >= 60) return; shown++;
+      var tow = fnum(g(v, "Towing capacity (lbs.)", r.i)), st = g(v, "Seating capacity", r.i);
+      var bits = [st ? st + " seats" : "", g(v, "Drive type", r.i), tow ? "tows " + tow.toLocaleString("en-US") + " lb" : "", mpg(v, r.i)].filter(Boolean).join(" · ");
+      h += '<button class="opt" data-trim="' + r.i + '" data-fm="' + esc(n) + '" data-fy="' + y + '"><div><div class="t">' + esc(trimName(v, r.t)) + '</div><div class="s">' + esc(bits) + '</div></div><div class="p">' + money(price(r.t)) + "</div></button>";
+    });
+  });
+  if (!total) return '<div class="empty">No trims match all of that. Loosen one filter.</div>';
+  return '<p class="muted">' + total + " trim" + (total === 1 ? "" : "s") + " match." + (total > shown ? " Showing the first " + shown + " by price; add a filter to narrow it." : "") + "</p>" + h;
+}
+
+/* ---------- what is new ---------- */
+function nkey(v, t){
+  var n = t.n.replace(/[®™]/g, "").replace(/\b20\d\d\b/g, "").toUpperCase();
+  if (v.name === "Grand Wagoneer") n = n.replace(/\bL\b/, "LONG WHEELBASE");
+  return n.split(/\s+/).filter(Boolean).sort().join(" ");
+}
+function rmap(v){ var o = {}; v.rows.forEach(function(r){ o[r[2]] = r; }); return o; }
+function viewNew(){
+  var m = models()[S.name], ys = Object.keys(m).map(Number).sort(), y1 = ys[ys.length-1], y0 = ys[ys.length-2], a = m[y0], b = m[y1];
+  var ia = {}, ib = {}, pairs = [], added = [], dropped = [];
+  a.trims.forEach(function(t, i){ ia[nkey(a, t)] = i; });
+  b.trims.forEach(function(t, i){ var k = nkey(b, t); if (ia[k] === undefined) added.push(i); else pairs.push([ia[k], i]); });
+  var seen = {}; pairs.forEach(function(p){ seen[p[0]] = 1; });
+  a.trims.forEach(function(t, i){ if (!seen[i]) dropped.push(i); });
+  var h = crumbs([BR.label, S.name, "What is new"], "model") + '<h2 class="q">What is new: ' + y1 + " vs " + y0 + "</h2>";
+  h += '<p class="muted">' + esc(S.name) + " " + y1 + " has " + b.trims.length + " trims. " + pairs.length + " carry over from " + y0 + ", " + added.length + (added.length === 1 ? " is" : " are") + " new, " + dropped.length + (dropped.length === 1 ? " is" : " are") + " gone. Trims are matched by name, so a renamed trim shows as one gone and one new.</p>";
+  function plist(v, idx, label){
+    if (!idx.length) return "";
+    var s = '<details class="sec"><summary>' + label + ' <span class="n">' + idx.length + '</span></summary><div class="in">';
+    idx.slice().sort(function(p, q){ return price(v.trims[p]) - price(v.trims[q]); }).forEach(function(i){ s += '<div class="row"><div class="k">' + esc(trimName(v, v.trims[i])) + '</div><div class="vv">' + money(price(v.trims[i])) + "</div></div>"; });
+    return s + "</div></details>";
+  }
+  h += plist(b, added, "New for " + y1) + plist(a, dropped, "Not offered in " + y1);
+  var pc = pairs.filter(function(p){ return price(a.trims[p[0]]) !== price(b.trims[p[1]]); });
+  if (pairs.length){
+    var ds = pc.map(function(p){ return price(b.trims[p[1]]) - price(a.trims[p[0]]); });
+    var avg = ds.length ? ds.reduce(function(x, y){ return x + y; }, 0) / ds.length : 0;
+    h += '<details class="sec" open><summary>Price changes <span class="n">' + pc.length + '</span></summary><div class="in">';
+    if (!pc.length) h += '<div class="muted">No price changes on the ' + pairs.length + " carry-over trims.</div>";
+    else {
+      h += '<div class="muted">' + pc.length + " of " + pairs.length + " carry-over trims changed price; average " + (avg >= 0 ? "+" : "−") + money(Math.abs(avg)) + ".</div>";
+      pc.sort(function(p, q){ return Math.abs(price(b.trims[q[1]]) - price(a.trims[q[0]])) - Math.abs(price(b.trims[p[1]]) - price(a.trims[p[0]])); }).forEach(function(p){
+        var o = price(a.trims[p[0]]), n = price(b.trims[p[1]]), dd = n - o;
+        h += '<div class="row"><div class="k">' + esc(trimName(b, b.trims[p[1]])) + '</div><div class="vv">' + money(o) + " → " + money(n) + " (" + (dd > 0 ? "+" : "−") + money(Math.abs(dd)) + ")</div></div>";
+      });
+    }
+    h += "</div></details>";
+  }
+  var ra = rmap(a), rb = rmap(b), ch = {};
+  Object.keys(ra).concat(Object.keys(rb)).forEach(function(d){
+    if (ch[d]) return;
+    var sec = (rb[d] || ra[d])[0], any = [];
+    pairs.forEach(function(p){
+      var x = ra[d] ? val(ra[d], p[0]) : "", y = rb[d] ? val(rb[d], p[1]) : "";
+      if ((x || "") !== (y || "")) any.push([x || "", y || ""]);
+    });
+    if (any.length) ch[d] = { sec: sec, grp: (rb[d] || ra[d])[1], list: any };
+  });
+  var bySec = {};
+  Object.keys(ch).forEach(function(d){ (bySec[ch[d].sec] = bySec[ch[d].sec] || []).push(d); });
+  var any2 = false;
+  SECS.forEach(function(sc){
+    var ds = bySec[sc[0]]; if (!ds) return; any2 = true;
+    ds.sort(function(p, q){ return ch[q].list.length - ch[p].list.length; });
+    h += '<details class="sec"><summary>' + sc[1] + ' changes <span class="n">' + ds.length + '</span></summary><div class="in">';
+    ds.forEach(function(d){
+      var tr = {}, ord = [];
+      ch[d].list.forEach(function(c){ var k = c[0] + "\u0001" + c[1]; if (!tr[k]){ tr[k] = { c: c, n: 0 }; ord.push(k); } tr[k].n++; });
+      ord.sort(function(p, q){ return tr[q].n - tr[p].n; });
+      h += '<div class="ans"><div class="a">' + esc(d) + '</div><div class="vals">' + ord.slice(0, 3).map(function(k){ var c = tr[k].c; return "<div>" + esc(fmtV(d, c[0]) || "—") + " → <b>" + esc(fmtV(d, c[1]) || "—") + "</b> <span class=\"muted\">on " + tr[k].n + (tr[k].n === 1 ? " trim" : " trims") + "</span></div>"; }).join("") + (ord.length > 3 ? '<div class="muted">+' + (ord.length - 3) + " other changes</div>" : "") + "</div></div>";
+    });
+    h += "</div></details>";
+  });
+  var pa = {}, pb = {}, ng = [], dg = [];
+  a.pk.forEach(function(p){ pa[p[0]] = p[1]; }); b.pk.forEach(function(p){ pb[p[0]] = p[1]; });
+  Object.keys(pa).concat(Object.keys(pb)).filter(function(d, i, arr){ return arr.indexOf(d) === i; }).forEach(function(d){
+    var up = 0, down = 0;
+    pairs.forEach(function(p){ var x = pa[d] ? incl(pa[d][p[0]]) : false, y = pb[d] ? incl(pb[d][p[1]]) : false; if (!x && y) up++; if (x && !y) down++; });
+    if (up) ng.push([d, up]); if (down) dg.push([d, down]);
+  });
+  if (ng.length || dg.length){
+    any2 = true;
+    h += '<details class="sec"><summary>Standard equipment changes <span class="n">' + (ng.length + dg.length) + '</span></summary><div class="in">';
+    if (ng.length) h += "<h4>Newly standard or included</h4>" + ng.sort(function(p, q){ return q[1] - p[1]; }).map(function(x){ return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + x[1] + (x[1] === 1 ? " trim" : " trims") + "</div></div>"; }).join("");
+    if (dg.length) h += "<h4>No longer standard</h4>" + dg.sort(function(p, q){ return q[1] - p[1]; }).map(function(x){ return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + x[1] + (x[1] === 1 ? " trim" : " trims") + "</div></div>"; }).join("");
+    h += "</div></details>";
+  }
+  if (!any2 && !added.length && !dropped.length && !pc.length) h += '<div class="empty">No differences found between the two years.</div>';
   return h;
 }
 
@@ -399,7 +588,7 @@ function viewBrands(){
 }
 function pickBrand(k, keepQ){
   BR = BRANDS[k]; D = CACHE[k] || null; setTheme(k);
-  S.view = "home"; S.name = ""; S.year = 0; S.ti = -1; S.ci = -1; S.all = false;
+  S.view = "home"; S.name = ""; S.year = 0; S.ti = -1; S.ci = -1; S.all = false; S.from = ""; resetF();
   if (!keepQ){ S.q = ""; $("q").value = ""; }
   $("q").placeholder = BR.ph;
   if (D){ finishLoad(); render(); return; }
@@ -434,23 +623,32 @@ function render(){
   else if (S.view === "model") h = viewModel();
   else if (S.view === "sheet") h = viewSheet();
   else if (S.view === "pickcmp") h = viewPickCmp();
+  else if (S.view === "find") h = viewFind();
+  else if (S.view === "new") h = viewNew();
   else h = viewCompare();
   $("main").innerHTML = h;
   window.scrollTo(0, 0);
 }
 document.addEventListener("click", function(e){
-  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff]");
+  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step],[data-freset]");
   if (!el) return;
   if (el.dataset.brand){ pickBrand(el.dataset.brand); return; }
   if (el.dataset.go === "brands"){ BR = null; D = null; setTheme(null); S.q = ""; $("q").value = ""; $("q").placeholder = "Ask: Compass Limited towing, Charger Scat Pack, 1500 Laramie"; $("stamp").textContent = ""; $("foot").textContent = ""; render(); return; }
-  if (el.dataset.model){ S.name = el.dataset.model; var ys = Object.keys(models()[S.name]).map(Number).sort(); if (!S.year || !models()[S.name][S.year]) S.year = ys[ys.length-1]; S.view = "model"; S.q = ""; $("q").value = ""; }
+  if (el.dataset.freset){ resetF(); render(); return; }
+  if (el.dataset.step){ S.via = true; S.ci = +el.dataset.step; S.view = "compare"; S.all = false; render(); return; }
+  if (el.dataset.model){ S.from = ""; S.name = el.dataset.model; var ys = Object.keys(models()[S.name]).map(Number).sort(); if (!S.year || !models()[S.name][S.year]) S.year = ys[ys.length-1]; S.view = "model"; S.q = ""; $("q").value = ""; }
   else if (el.dataset.year){ S.year = +el.dataset.year; if (S.q){ var keep = S.q.replace(/\b20(25|26|27)\b/g,"").trim(); S.q = keep + " " + S.year; $("q").value = S.q; } }
   else if (el.dataset.askyear){ var kq = S.q.replace(/\b20(25|26|27)\b/g,"").trim(); S.q = kq + " " + el.dataset.askyear; $("q").value = S.q; }
-  else if (el.dataset.trim){ S.ti = +el.dataset.trim; S.view = "sheet"; S.q = ""; $("q").value = ""; }
-  else if (el.dataset.cmp){ S.ci = +el.dataset.cmp; S.view = "compare"; S.all = false; }
+  else if (el.dataset.trim){ if (el.dataset.fm){ S.name = el.dataset.fm; S.year = +el.dataset.fy; S.from = "find"; } else S.from = ""; S.ti = +el.dataset.trim; S.view = "sheet"; S.q = ""; $("q").value = ""; }
+  else if (el.dataset.cmp){ S.via = false; S.ci = +el.dataset.cmp; S.view = "compare"; S.all = false; }
   else if (el.dataset.diff){ S.all = el.dataset.diff === "1"; var y0 = window.scrollY; render(); window.scrollTo(0, y0); return; }
   else if (el.dataset.go){ S.view = el.dataset.go; if (S.view === "home") { S.q = ""; $("q").value = ""; } }
   render();
+});
+document.addEventListener("change", function(e){
+  var k = e.target.dataset && e.target.dataset.f; if (!k) return;
+  var nv = e.target.value; S.f[k] = (k === "seats" || k === "tow" || k === "maxp" || k === "mpg") ? +nv : nv;
+  $("fres").innerHTML = findRes();
 });
 $("q").addEventListener("input", function(e){ S.q = e.target.value; render(); });
 $("askform").addEventListener("submit", function(e){ e.preventDefault(); });
@@ -461,6 +659,7 @@ document.addEventListener("input", function(e){
   $("sheetbody").innerHTML = sheetBody(v, S.ti, e.target.value.trim().toLowerCase());
 });
 
+resetF();
 render();
 </script>
 </body>
