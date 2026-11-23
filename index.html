@@ -121,9 +121,6 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
 .step p { margin: 6px 0; font-size: 15px; }
 .chip.g { background: #dff1df; color: #14501c; }
 .chip.l { background: #f6dede; color: #7a1a1a; }
-.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
-.fgrid label { display: block; font-size: 13px; color: var(--muted); }
-.fgrid select { width: 100%; font: inherit; padding: 9px 8px; margin-top: 2px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
 .btn.sec2 { background: var(--surface); color: var(--accent); border: 1.5px solid var(--accent); }
 .cmphead { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; font-family: var(--font-display); font-weight: 600; font-size: 18px; padding: 8px 0; border-bottom: 2px solid var(--line); }
 @media (max-width: 420px) { h2.q { font-size: 27px; } .row { grid-template-columns: 1fr 1fr; } }
@@ -150,8 +147,7 @@ var BRANDS = {
   chrysler: { label: "Chrysler", color: "#063e77", site: "chrysler.com", file: "data-chrysler.json", pm: "p", sub: "Pacifica (Voyager LX is under Pacifica 2026)", order: ["Pacifica"], ph: "Ask: Pacifica Limited towing, Voyager LX fuel economy", note: " Voyager LX is a 2026 trim listed under Pacifica; the 2027 Pacifica LX replaces it." }
 };
 var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladiator wagoneer rubicon sahara mojave trailhawk", dodge:"dodge charger durango hellcat scat daytona", chrysler:"chrysler pacifica voyager", ram:"ram 1500 2500 3500 4500 5500 promaster tradesman laramie longhorn rebel" };
-var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false, f: null };
-function resetF(){ S.f = {}; for (var k in F0) S.f[k] = F0[k]; }
+var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false };
 function price(t){ return BR.pm === "m" ? t.m : t.p; }
 var SECS = [["mechanical","Powertrain and suspension"],["exterior","Exterior"],["interior","Interior and tech"],["safety","Safety and security"],["dimensions","Dimensions and capacities"],["warranty","Limited warranty"]];
 var ALIAS = { mileage:["mpg"], economy:["mpg","economy"], fuel:["fuel","mpg"], engine:["engine","cylinder","valvetrain","compressor","horsepower","torque"], hp:["hp","horsepower"], power:["horsepower","hp","torque"], tow:["tow"], seats:["seat"], seating:["seat"], screen:["touchscreen","screen","display","uconnect"], sunroof:["sunroof","moonroof","skyroof","open air"], wheels:["wheel"], tires:["tire"], size:["length","width","height","wheelbase"], dimensions:["length","width","height","wheelbase","legroom","headroom"], cargo:["cargo"], price:["price"] };
@@ -211,7 +207,7 @@ function crumbs(parts, back){
   return h + parts.map(esc).join(" › ") + "</div>";
 }
 function viewHome(){
-  var m = models(), h = crumbs([BR.label], "brands") + '<h2 class="q">Which ' + BR.label + '?</h2><div class="actions"><button class="btn sec2" data-go="find">Find by need: seats, towing, price…</button></div><div class="list">';
+  var m = models(), h = crumbs([BR.label], "brands") + '<h2 class="q">Which ' + BR.label + '?</h2><div class="list">';
   BR.order.forEach(function(n){
     if (!m[n]) return;
     var y = latestYear(n), v = m[n][y];
@@ -363,59 +359,6 @@ function stepUpCard(v, a, b){
   if (specs.length) h += "<h4>Key specs</h4>" + '<div class="row c3"><div></div><div class="k">' + esc(nA) + '</div><div class="k">' + esc(nB) + "</div></div>" + specs.map(function(x){ return '<div class="row c3"><div class="k">' + x[0] + '</div><div class="vv">' + esc(x[1]) + '</div><div class="vv">' + esc(x[2]) + "</div></div>"; }).join("");
   if (lose.length) h += "<h4>Standard on " + esc(nA) + " but not " + esc(nB) + "</h4>" + chips(lose, "l", 12);
   return h + "</div>";
-}
-
-/* ---------- find by need ---------- */
-var F0 = { model: "", seats: 0, third: "", drive: "", tow: 0, maxp: 0, mpg: 0, heat: "", vent: "" };
-function sel(k, label, opts){
-  return "<label>" + label + '<select data-f="' + k + '">' + opts.map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(S.f[k]) === String(o[0]) ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select></label>";
-}
-function viewFind(){
-  var m = models(), names = BR.order.filter(function(n){ return m[n]; });
-  var h = crumbs([BR.label, "Find by need"], "home") + '<h2 class="q">What does the customer need?</h2><p class="muted">Searches the latest model year of each model. Set what matters, then tap a trim.</p><div class="fgrid">';
-  h += sel("model", "Model", [["", "All models"]].concat(names.map(function(n){ return [n, n]; })));
-  h += sel("seats", "Seats", [[0,"Any"],[5,"5 or more"],[6,"6 or more"],[7,"7 or more"],[8,"8 or more"]]);
-  h += sel("third", "Third row", [["","Any"],["1","Has a third row"]]);
-  h += sel("drive", "Drive", [["","Any"],["1","4WD or AWD"]]);
-  h += sel("tow", "Towing at least", [[0,"Any"],[3500,"3,500 lb"],[5000,"5,000 lb"],[7500,"7,500 lb"],[10000,"10,000 lb"],[15000,"15,000 lb"]]);
-  h += sel("maxp", "Price up to", [[0,"Any"],[35000,"$35,000"],[45000,"$45,000"],[55000,"$55,000"],[70000,"$70,000"],[90000,"$90,000"]]);
-  h += sel("mpg", "Combined mpg", [[0,"Any"],[18,"18 or better"],[20,"20 or better"],[22,"22 or better"],[25,"25 or better"]]);
-  h += sel("heat", "Heated seats", [["","Any"],["1","Yes"]]);
-  h += sel("vent", "Ventilated seats", [["","Any"],["1","Yes"]]);
-  h += '</div><div class="actions"><button class="btn sec2" data-freset="1">Reset filters</button></div><div id="fres">' + findRes() + "</div>";
-  return h;
-}
-function fnum(x){ var n = parseFloat(String(x).replace(/,/g, "")); return isNaN(n) ? 0 : n; }
-function findRes(){
-  var m = models(), f = S.f, out = [], total = 0, shown = 0, h = "";
-  BR.order.forEach(function(n){
-    if (!m[n] || (f.model && f.model !== n)) return;
-    var y = latestYear(n), v = m[n][y], rows = [];
-    v.trims.forEach(function(t, i){
-      var seats = fnum(g(v, "Seating capacity", i)), third = g(v, "3rd row seat descriptor", i), drv = g(v, "Drive type", i), ht = g(v, "Heated seats", i), vt = g(v, "Ventilated front seats", i);
-      if (f.seats && seats < f.seats) return;
-      if (f.third && (!third || /^none$/i.test(third))) return;
-      if (f.drive && !/four|all/i.test(drv)) return;
-      if (f.tow && fnum(g(v, "Towing capacity (lbs.)", i)) < f.tow) return;
-      if (f.maxp && price(t) > f.maxp) return;
-      if (f.mpg && fnum(g(v, "Fuel economy - combined (mpg)", i)) < f.mpg) return;
-      if (f.heat && (!ht || /^none$/i.test(ht))) return;
-      if (f.vent && (!vt || /^no/i.test(vt))) return;
-      rows.push({ t: t, i: i });
-    });
-    if (!rows.length) return;
-    rows.sort(function(a, b){ return price(a.t) - price(b.t); });
-    total += rows.length;
-    h += '<div class="group">' + esc(y + " " + n) + " · " + rows.length + (rows.length === 1 ? " match" : " matches") + "</div>";
-    rows.forEach(function(r){
-      if (shown >= 60) return; shown++;
-      var tow = fnum(g(v, "Towing capacity (lbs.)", r.i)), st = g(v, "Seating capacity", r.i);
-      var bits = [st ? st + " seats" : "", g(v, "Drive type", r.i), tow ? "tows " + tow.toLocaleString("en-US") + " lb" : "", mpg(v, r.i)].filter(Boolean).join(" · ");
-      h += '<button class="opt" data-trim="' + r.i + '" data-fm="' + esc(n) + '" data-fy="' + y + '"><div><div class="t">' + esc(trimName(v, r.t)) + '</div><div class="s">' + esc(bits) + '</div></div><div class="p">' + money(price(r.t)) + "</div></button>";
-    });
-  });
-  if (!total) return '<div class="empty">No trims match all of that. Loosen one filter.</div>';
-  return '<p class="muted">' + total + " trim" + (total === 1 ? "" : "s") + " match." + (total > shown ? " Showing the first " + shown + " by price; add a filter to narrow it." : "") + "</p>" + h;
 }
 
 /* ---------- what is new ---------- */
@@ -588,7 +531,7 @@ function viewBrands(){
 }
 function pickBrand(k, keepQ){
   BR = BRANDS[k]; D = CACHE[k] || null; setTheme(k);
-  S.view = "home"; S.name = ""; S.year = 0; S.ti = -1; S.ci = -1; S.all = false; S.from = ""; resetF();
+  S.view = "home"; S.name = ""; S.year = 0; S.ti = -1; S.ci = -1; S.all = false; S.from = "";
   if (!keepQ){ S.q = ""; $("q").value = ""; }
   $("q").placeholder = BR.ph;
   if (D){ finishLoad(); render(); return; }
@@ -623,32 +566,25 @@ function render(){
   else if (S.view === "model") h = viewModel();
   else if (S.view === "sheet") h = viewSheet();
   else if (S.view === "pickcmp") h = viewPickCmp();
-  else if (S.view === "find") h = viewFind();
   else if (S.view === "new") h = viewNew();
   else h = viewCompare();
   $("main").innerHTML = h;
   window.scrollTo(0, 0);
 }
 document.addEventListener("click", function(e){
-  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step],[data-freset]");
+  var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step]");
   if (!el) return;
   if (el.dataset.brand){ pickBrand(el.dataset.brand); return; }
   if (el.dataset.go === "brands"){ BR = null; D = null; setTheme(null); S.q = ""; $("q").value = ""; $("q").placeholder = "Ask: Compass Limited towing, Charger Scat Pack, 1500 Laramie"; $("stamp").textContent = ""; $("foot").textContent = ""; render(); return; }
-  if (el.dataset.freset){ resetF(); render(); return; }
   if (el.dataset.step){ S.via = true; S.ci = +el.dataset.step; S.view = "compare"; S.all = false; render(); return; }
   if (el.dataset.model){ S.from = ""; S.name = el.dataset.model; var ys = Object.keys(models()[S.name]).map(Number).sort(); if (!S.year || !models()[S.name][S.year]) S.year = ys[ys.length-1]; S.view = "model"; S.q = ""; $("q").value = ""; }
   else if (el.dataset.year){ S.year = +el.dataset.year; if (S.q){ var keep = S.q.replace(/\b20(25|26|27)\b/g,"").trim(); S.q = keep + " " + S.year; $("q").value = S.q; } }
   else if (el.dataset.askyear){ var kq = S.q.replace(/\b20(25|26|27)\b/g,"").trim(); S.q = kq + " " + el.dataset.askyear; $("q").value = S.q; }
-  else if (el.dataset.trim){ if (el.dataset.fm){ S.name = el.dataset.fm; S.year = +el.dataset.fy; S.from = "find"; } else S.from = ""; S.ti = +el.dataset.trim; S.view = "sheet"; S.q = ""; $("q").value = ""; }
+  else if (el.dataset.trim){ S.from = ""; S.ti = +el.dataset.trim; S.view = "sheet"; S.q = ""; $("q").value = ""; }
   else if (el.dataset.cmp){ S.via = false; S.ci = +el.dataset.cmp; S.view = "compare"; S.all = false; }
   else if (el.dataset.diff){ S.all = el.dataset.diff === "1"; var y0 = window.scrollY; render(); window.scrollTo(0, y0); return; }
   else if (el.dataset.go){ S.view = el.dataset.go; if (S.view === "home") { S.q = ""; $("q").value = ""; } }
   render();
-});
-document.addEventListener("change", function(e){
-  var k = e.target.dataset && e.target.dataset.f; if (!k) return;
-  var nv = e.target.value; S.f[k] = (k === "seats" || k === "tow" || k === "maxp" || k === "mpg") ? +nv : nv;
-  $("fres").innerHTML = findRes();
 });
 $("q").addEventListener("input", function(e){ S.q = e.target.value; render(); });
 $("askform").addEventListener("submit", function(e){ e.preventDefault(); });
@@ -659,7 +595,6 @@ document.addEventListener("input", function(e){
   $("sheetbody").innerHTML = sheetBody(v, S.ti, e.target.value.trim().toLowerCase());
 });
 
-resetF();
 render();
 </script>
 </body>
