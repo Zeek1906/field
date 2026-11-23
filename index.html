@@ -594,7 +594,15 @@ function pickBrand(k, keepQ){
   loadData(k, 0).then(function(d){
     CACHE[k] = d;
     if (BR === BRANDS[k]){
-      try { D = d; finishLoad(); render(); } catch (e) { showLoadError(k, "Display error: " + (e && e.message)); }
+      try {
+        D = d; finishLoad();
+        if (PENDING){
+          var mm = models()[PENDING.name];
+          if (mm){ S.name = PENDING.name; var yy = +PENDING.year; S.year = mm[yy] ? yy : Math.max.apply(null, Object.keys(mm).map(Number)); S.view = "model"; }
+          PENDING = null;
+        }
+        render();
+      } catch (e) { showLoadError(k, "Display error: " + (e && e.message)); }
     }
   }).catch(function(err){ if (BR === BRANDS[k]) showLoadError(k, err); });
 }
@@ -612,7 +620,17 @@ function detectBrand(q){
   for (var i = 0; i < tk.length; i++) for (var k in HINTS) if ((" " + HINTS[k] + " ").indexOf(" " + tk[i] + " ") > -1) return k;
   return null;
 }
+var PENDING = null;
+function curKey(){ for (var k in BRANDS) if (BR === BRANDS[k]) return k; return ""; }
+function syncHash(){
+  try {
+    var k = curKey(), h = "";
+    if (k){ h = "#" + k; if (S.name && S.view !== "home"){ h += "/" + encodeURIComponent(S.name); if (S.year) h += "/" + S.year; } }
+    if (location.hash !== h) history.replaceState(null, "", h || (location.pathname + location.search));
+  } catch (e) {}
+}
 function render(){
+  syncHash();
   var q = S.q.trim(), h;
   if (!BR){
     if (q){ var bk = detectBrand(q); if (bk){ pickBrand(bk, true); return; } }
@@ -654,7 +672,11 @@ document.addEventListener("input", function(e){
   $("sheetbody").innerHTML = sheetBody(v, S.ti, e.target.value.trim().toLowerCase());
 });
 
-render();
+(function(){
+  var m = decodeURIComponent(location.hash.slice(1)).split("/");
+  if (m[0] && BRANDS[m[0]]){ if (m[1]) PENDING = { name: m[1], year: m[2] || 0 }; pickBrand(m[0]); }
+  else render();
+})();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
 </script>
 </body>
