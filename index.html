@@ -547,7 +547,7 @@ function setTheme(k){
 function finishLoad(){
   var dt = new Date(D.scraped);
   $("stamp").textContent = BR.site + " data, " + dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Chicago" });
-  $("foot").textContent = "Source: the Compare Models tool on " + BR.site + ". Prices are MSRP and exclude destination, taxes and fees, which vary by state and dealer. Confirm anything you quote to a customer on " + BR.site + " or in your internal sources." + BR.note;
+  $("foot").textContent = "Source: the Compare Models tool on " + BR.site + ". MSRP only; excludes destination, taxes and fees. Verify on " + BR.site + " before quoting." + BR.note;
 }
 function detectBrand(q){
   var tk = tokens(q);
