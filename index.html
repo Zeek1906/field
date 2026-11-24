@@ -31,6 +31,7 @@ html[data-tb="jeep"] { --brand: #1e4544; --accent: #1e4544; --soft: #dde9e6; }
 html[data-tb="ram"] { --brand: #880d00; --accent: #880d00; --soft: #f3e0dd; }
 html[data-tb="dodge"] { --brand: #d50000; --accent: #d50000; --soft: #fbe0e0; }
 html[data-tb="chrysler"] { --brand: #063e77; --accent: #063e77; --soft: #dce8f3; }
+html[data-tb="alfa"] { --brand: #ba0816; --accent: #ba0816; --soft: #f8dfe1; }
 html[data-tb="fiat"] { --brand: #a6192e; --accent: #a6192e; --soft: #f6e1e4; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -50,6 +51,7 @@ html[data-tb="fiat"] { --brand: #a6192e; --accent: #a6192e; --soft: #f6e1e4; }
   html[data-tb="ram"]:not([data-theme="light"]) { --accent: #ee7f6e; --accent-ink: #2a0904; --soft: #36201d; }
   html[data-tb="dodge"]:not([data-theme="light"]) { --accent: #ff7070; --accent-ink: #2a0606; --soft: #381d1d; }
   html[data-tb="chrysler"]:not([data-theme="light"]) { --accent: #77b6f0; --accent-ink: #06182c; --soft: #1b2a3a; }
+  html[data-tb="alfa"]:not([data-theme="light"]) { --accent: #ff7580; --accent-ink: #2a0508; --soft: #3a1d20; }
   html[data-tb="fiat"]:not([data-theme="light"]) { --accent: #f08090; --accent-ink: #2a0610; --soft: #381d22; }
 }
 * { box-sizing: border-box; }
@@ -155,9 +157,10 @@ var BRANDS = {
   ram: { label: "Ram", color: "#880d00", site: "ramtrucks.com", file: "data-ram.json", pm: "p", sub: "1500 · 2500 · 3500 · Chassis Cab · ProMaster", order: ["Ram 1500","Ram 2500","Ram 3500","Ram 3500 Chassis Cab","Ram 4500 Chassis Cab","Ram 5500 Chassis Cab","Ram ProMaster","Ram ProMaster EV"], ph: "Ask: 1500 Laramie towing, ProMaster payload", note: "" },
   dodge: { label: "Dodge", color: "#d50000", site: "dodge.com", file: "data-dodge.json", pm: "p", sub: "Charger · Durango", order: ["Charger","Durango"], ph: "Ask: Charger Scat Pack horsepower, Durango towing", note: "" },
   chrysler: { label: "Chrysler", color: "#063e77", site: "chrysler.com", file: "data-chrysler.json", pm: "p", sub: "Pacifica (Voyager LX is under Pacifica 2026)", order: ["Pacifica"], ph: "Ask: Pacifica Limited towing, Voyager LX fuel economy", note: " Voyager LX is a 2026 trim listed under Pacifica; the 2027 Pacifica LX replaces it." },
-  fiat: { label: "Fiat", color: "#a6192e", site: "fiatusa.com", file: "data-fiat.json", pm: "p", sub: "500e, Topolino", order: ["500e","Topolino"], ph: "Ask: 500e Icona range, Topolino safety features", note: "" }
+  fiat: { label: "Fiat", color: "#a6192e", site: "fiatusa.com", file: "data-fiat.json", pm: "p", sub: "500e, Topolino", order: ["500e","Topolino"], ph: "Ask: 500e Icona range, Topolino safety features", note: "" },
+  alfa: { label: "Alfa Romeo", color: "#ba0816", site: "alfaromeousa.com", file: "data-alfa.json", pm: "p", sub: "Giulia, Stelvio, Tonale", order: ["Giulia","Stelvio","Tonale"], ph: "Ask: Tonale Veloce horsepower, Giulia AWD warranty", note: "" }
 };
-var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladiator wagoneer rubicon sahara mojave trailhawk", dodge:"dodge charger durango hellcat scat daytona", chrysler:"chrysler pacifica voyager", fiat:"fiat 500e topolino abarth icona inspi armani", ram:"ram 1500 2500 3500 4500 5500 promaster tradesman laramie longhorn rebel" };
+var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladiator wagoneer rubicon sahara mojave trailhawk", dodge:"dodge charger durango hellcat scat daytona", chrysler:"chrysler pacifica voyager", alfa:"alfa romeo giulia stelvio tonale veloce sprint intensa tributo italiano eawd", fiat:"fiat 500e topolino abarth icona inspi armani", ram:"ram 1500 2500 3500 4500 5500 promaster tradesman laramie longhorn rebel" };
 var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false };
 function price(t){ return BR.pm === "m" ? t.m : t.p; }
 var SECS = [["mechanical","Powertrain and suspension"],["exterior","Exterior"],["interior","Interior and tech"],["safety","Safety and security"],["dimensions","Dimensions and capacities"],["warranty","Limited warranty"]];
@@ -571,7 +574,7 @@ function viewAsk(q){
 /* ---------- wiring ---------- */
 function viewBrands(){
   var h = '<h2 class="q">Which brand?</h2><div class="list">';
-  ["jeep","ram","dodge","chrysler","fiat"].forEach(function(k){ h += '<button class="opt bt" style="background:' + BRANDS[k].color + '" data-brand="' + k + '"><div><div class="t">' + BRANDS[k].label + '</div><div class="s">' + esc(BRANDS[k].sub) + "</div></div></button>"; });
+  ["jeep","ram","dodge","chrysler","fiat","alfa"].forEach(function(k){ h += '<button class="opt bt" style="background:' + BRANDS[k].color + '" data-brand="' + k + '"><div><div class="t">' + BRANDS[k].label + '</div><div class="s">' + esc(BRANDS[k].sub) + "</div></div></button>"; });
   return h + "</div>";
 }
 function loadData(k, n){
