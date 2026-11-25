@@ -108,18 +108,9 @@ details.sec > summary .n { color: var(--muted); font-family: var(--font-body); f
 .row.diff .vv { background: var(--diff); border-radius: 4px; padding: 0 4px; }
 .mini { margin: 4px 0 12px; }
 .filter { width: 100%; font: inherit; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); margin: 10px 0 0; }
-.filter { border-color: var(--accent); border-width: 2px; padding: 12px 14px; font-size: 16px; margin-top: 14px; }
+.filter { border-color: var(--accent); border-width: 2px; padding: 12px 14px; font-size: 16px; margin-top: 12px; }
 .pills.sm { margin: 8px 0 0; }
 .pills.sm .pill { font-size: 13.5px; padding: 6px 12px; }
-.topf { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-top: 12px; padding: 12px 16px 6px; }
-.topf h3 { margin: 0 0 2px; font-family: var(--font-display); font-size: 19px; }
-.topf .sub { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
-.tf { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; }
-.tf:first-of-type { border-top: 0; }
-.tf .st { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--soft); }
-.tf .st.s { background: #dff1df; color: #14501c; }
-.tf .st.n { background: transparent; color: var(--muted); font-weight: 500; border: 1px solid var(--line); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tf .st.s { background: #1d3a22; color: #a8e0b0; } }
 details.grp { border-top: 1px solid var(--line); }
 details.grp:first-child { border-top: 0; }
 details.grp > summary { cursor: pointer; padding: 11px 0; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); font-weight: 700; display: flex; justify-content: space-between; list-style-position: inside; }
@@ -161,7 +152,7 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
   <header class="top">
     <div class="brandrow"><h1><button class="hometitle" data-go="brands" aria-label="All brands">Field Guide</button></h1><div class="stamp" id="stamp"></div></div>
     <form class="ask" id="askform" autocomplete="off">
-      <input id="q" type="search" placeholder="Ask: Compass Limited towing, Charger Scat Pack, 1500 Laramie" aria-label="Ask about a model or trim">
+      <input id="q" type="search" placeholder="Find a model or trim: Compass Limited towing, Charger Scat Pack, 1500 Laramie" aria-label="Ask about a model or trim">
       <button type="button" id="clear" aria-label="Clear search">Clear</button>
     </form>
   </header>
@@ -172,12 +163,12 @@ footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
 
 <script>
 var BRANDS = {
-  jeep: { label: "Jeep", color: "#1e4544", site: "jeep.com", file: "data-jeep.json", pm: "m", sub: "Compass · Cherokee · Wrangler · Gladiator · Grand Cherokee · Wagoneer", order: ["Compass","Cherokee","Wrangler","Gladiator","Grand Cherokee","Grand Wagoneer","Wagoneer S"], ph: "Ask: Compass Limited towing, Gladiator Mojave payload", note: " Wagoneer S shows only 2025 because that is all jeep.com lists." },
-  ram: { label: "Ram", color: "#880d00", site: "ramtrucks.com", file: "data-ram.json", pm: "p", sub: "1500 · 2500 · 3500 · Chassis Cab · ProMaster", order: ["Ram 1500","Ram 2500","Ram 3500","Ram 3500 Chassis Cab","Ram 4500 Chassis Cab","Ram 5500 Chassis Cab","Ram ProMaster","Ram ProMaster EV"], ph: "Ask: 1500 Laramie towing, ProMaster payload", note: "" },
-  dodge: { label: "Dodge", color: "#d50000", site: "dodge.com", file: "data-dodge.json", pm: "p", sub: "Charger · Durango", order: ["Charger","Durango"], ph: "Ask: Charger Scat Pack horsepower, Durango towing", note: "" },
-  chrysler: { label: "Chrysler", color: "#063e77", site: "chrysler.com", file: "data-chrysler.json", pm: "p", sub: "Pacifica (Voyager LX is under Pacifica 2026)", order: ["Pacifica"], ph: "Ask: Pacifica Limited towing, Voyager LX fuel economy", note: " Voyager LX is a 2026 trim listed under Pacifica; the 2027 Pacifica LX replaces it." },
-  fiat: { label: "Fiat", color: "#a6192e", site: "fiatusa.com", file: "data-fiat.json", pm: "p", sub: "500e, Topolino", order: ["500e","Topolino"], ph: "Ask: 500e Icona range, Topolino safety features", note: "" },
-  alfa: { label: "Alfa Romeo", color: "#ba0816", site: "alfaromeousa.com", file: "data-alfa.json", pm: "p", sub: "Giulia, Stelvio, Tonale", order: ["Giulia","Stelvio","Tonale"], ph: "Ask: Tonale Veloce horsepower, Giulia AWD warranty", note: "" }
+  jeep: { label: "Jeep", color: "#1e4544", site: "jeep.com", file: "data-jeep.json", pm: "m", sub: "Compass · Cherokee · Wrangler · Gladiator · Grand Cherokee · Wagoneer", order: ["Compass","Cherokee","Wrangler","Gladiator","Grand Cherokee","Grand Wagoneer","Wagoneer S"], ph: "Find a model or trim: Compass Limited towing, Gladiator Mojave payload", note: " Wagoneer S shows only 2025 because that is all jeep.com lists." },
+  ram: { label: "Ram", color: "#880d00", site: "ramtrucks.com", file: "data-ram.json", pm: "p", sub: "1500 · 2500 · 3500 · Chassis Cab · ProMaster", order: ["Ram 1500","Ram 2500","Ram 3500","Ram 3500 Chassis Cab","Ram 4500 Chassis Cab","Ram 5500 Chassis Cab","Ram ProMaster","Ram ProMaster EV"], ph: "Find a model or trim: 1500 Laramie towing, ProMaster payload", note: "" },
+  dodge: { label: "Dodge", color: "#d50000", site: "dodge.com", file: "data-dodge.json", pm: "p", sub: "Charger · Durango", order: ["Charger","Durango"], ph: "Find a model or trim: Charger Scat Pack horsepower, Durango towing", note: "" },
+  chrysler: { label: "Chrysler", color: "#063e77", site: "chrysler.com", file: "data-chrysler.json", pm: "p", sub: "Pacifica (Voyager LX is under Pacifica 2026)", order: ["Pacifica"], ph: "Find a model or trim: Pacifica Limited towing, Voyager LX fuel economy", note: " Voyager LX is a 2026 trim listed under Pacifica; the 2027 Pacifica LX replaces it." },
+  fiat: { label: "Fiat", color: "#a6192e", site: "fiatusa.com", file: "data-fiat.json", pm: "p", sub: "500e, Topolino", order: ["500e","Topolino"], ph: "Find a model or trim: 500e Icona range, Topolino safety features", note: "" },
+  alfa: { label: "Alfa Romeo", color: "#ba0816", site: "alfaromeousa.com", file: "data-alfa.json", pm: "p", sub: "Giulia, Stelvio, Tonale", order: ["Giulia","Stelvio","Tonale"], ph: "Find a model or trim: Tonale Veloce horsepower, Giulia AWD warranty", note: "" }
 };
 var BR = null, CACHE = {}, HINTS = { jeep:"jeep compass cherokee wrangler gladiator wagoneer rubicon sahara mojave trailhawk", dodge:"dodge charger durango hellcat scat daytona", chrysler:"chrysler pacifica voyager", alfa:"alfa romeo giulia stelvio tonale veloce sprint intensa tributo italiano eawd", fiat:"fiat 500e topolino abarth icona inspi armani", ram:"ram 1500 2500 3500 4500 5500 promaster tradesman laramie longhorn rebel" };
 var D = null, S = { view: "home", name: "", year: 0, ti: -1, ci: -1, q: "", all: false, from: "", via: false };
@@ -283,68 +274,8 @@ function secRows(v, i, sec, f, full){
   });
   return { groups: groups, order: order, hidden: hidden, count: order.reduce(function(a,k){ return a + groups[k].length; }, 0) };
 }
-var TOPF = [
-  ["Heated front seats", /heated (front|driver|passenger)|heated seats|steering wheel and seats/i, /second|rear|3rd|third/i],
-  ["Ventilated front seats", /ventilated/i, /second|rear|3rd|third/i],
-  ["Heated steering wheel", /heated steering/i],
-  ["Parking sensors", /park.?sense|park.assist|parking sensor|parking assist/i],
-  ["Backup or surround camera", /surround.view|back-?up camera|rear.*camera|parkview|backup camera/i, /washer|trailer|stop lamp|stop light/i],
-  ["Automatic emergency braking", /forward.collision|automatic emergency|active braking|emergency braking/i],
-  ["Blind-spot monitoring", /blind.spot/i, /view/i],
-  ["Lane-keep assist", /lane.(keep|management|departure|centering)/i],
-  ["Adaptive cruise control", /adaptive cruise|distance pacing/i],
-  ["Power driver seat", /power.*driver|driver.*power|\d-way power adjustable/i, /lumbar|bolster/i],
-  ["Apple CarPlay / Android Auto", /carplay|android auto/i],
-  ["Remote start", /remote start/i],
-  ["Sunroof", /sunroof|moonroof|panoramic/i, /activation|type|2nd|3rd|second|third/i],
-  ["Wireless charging pad", /wireless charging/i],
-  ["Trailer tow package", /trailer.?tow|towing (package|technology|group)|tow technology|trailer brake|brake controller/i]
-];
-function pkStatus(v, i, re, ex){
-  var best = 0, minp = 0, any = false, wl = false;
-  function hit2(n){ return re.test(n) && !(ex && ex.test(n)); }
-  v.pk.forEach(function(p){
-    if (!hit2(p[0])) return; any = true;
-    var x = p[1][i]; if (!x) return;
-    if (/wireless/i.test(p[0])) wl = true;
-    if (std(x) || x.charAt(0) === "S"){ best = 2; return; }
-    if (best < 1) best = 1; var pr = priceOf(x); if (pr && (!minp || pr < minp)) minp = pr;
-  });
-  v.rows.forEach(function(r){
-    if (!hit2(r[2])) return; any = true;
-    var x = val(r, i); if (x === "" || x === undefined || FILLER.test(String(x).trim())) return;
-    best = 2;
-  });
-  return { any: any, st: best, price: minp, wl: wl };
-}
-function screenInfo(v, i){
-  var s = 0, o = 0, any = false;
-  v.pk.forEach(function(p){
-    var m = /(\d+(?:\.\d+)?)-?inch.*touch.?screen|touch.?screen.*?(\d+(?:\.\d+)?)-?inch/i.exec(p[0]); if (!m || /cluster|tft/i.test(p[0])) return;
-    any = true; var sz = parseFloat(m[1] || m[2]), x = p[1][i]; if (!x) return;
-    if (std(x) || x.charAt(0) === "S") s = Math.max(s, sz); else o = Math.max(o, sz);
-  });
-  return { any: any, s: s, o: o };
-}
-function topFeatures(v, i){
-  var rows = "";
-  function line(label, cls, txt){ rows += '<div class="tf"><span>' + esc(label) + '</span><span class="st ' + cls + '">' + esc(txt) + "</span></div>"; }
-  var sc = screenInfo(v, i);
-  TOPF.forEach(function(f, k){
-    if (k === 10 && sc.any){
-      var t = sc.s ? sc.s + "-inch touchscreen standard" + (sc.o > sc.s ? ", " + sc.o + "-inch optional" : "") : (sc.o ? sc.o + "-inch touchscreen optional" : "");
-      line("Touchscreen size", t ? (sc.s ? "s" : "") : "n", t || "Not listed");
-    }
-    var r = pkStatus(v, i, f[1], f[2]); if (!r.any) return;
-    var lab = f[0] + (r.wl && r.st ? " (wireless)" : "");
-    if (r.st === 2) line(lab, "s", "Standard");
-    else if (r.st === 1) line(lab, "", r.price ? "Optional +" + money(r.price) : "Optional");
-    else line(lab, "n", "Not listed");
-  });
-  if (!rows) return "";
-  return '<div class="topf"><h3>Top features shoppers ask about</h3><div class="sub">Based on what new-car shoppers rank highest in industry surveys.</div>' + rows + "</div>";
-}
 function viewSheet(){
+  S.tfOn = false;
   var v = vehicle(S.name, S.year), i = S.ti, t = v.trims[i];
   var h = crumbs([BR.label, S.name + " " + S.year, trimName(v, t)], S.from || "model");
   if (BR.pm === "m"){
@@ -354,14 +285,13 @@ function viewSheet(){
     h += '<div class="hero"><h2>' + esc(S.year + " " + title(t.n)) + '</h2><div class="price">' + money(t.p) + ' <span class="pn">base MSRP</span></div>';
     if (t.m !== t.p) h += '<div class="pn">With default-selected options the starting price is ' + money(t.m) + " (+" + money(t.m - t.p) + ").</div>";
   }
-  h += '<div class="pn">Excludes destination, taxes and fees.</div></div>';
+  h += '<div class="pn">Excludes destination, taxes and fees.</div>';
+  h += '<input class="filter" id="tf" type="search" placeholder="Search this trim: heated seats, towing, wheels, warranty…" aria-label="Search this trim"></div>';
   var tiles = [["Engine", engine(v,i)], ["Horsepower", g(v,"Horsepower (hp)",i)], ["Torque", g(v,"Torque (lb.-ft.)",i)], ["Fuel economy", mpg(v,i) + (g(v,"Fuel economy - combined (mpg)",i) ? " (" + g(v,"Fuel economy - combined (mpg)",i) + " comb.)" : "")], ["Drive", g(v,"Drive type",i)], ["Towing", g(v,"Towing capacity (lbs.)",i) ? num(g(v,"Towing capacity (lbs.)",i)) + " lb" : ""], ["Payload", g(v,"Payload (lbs.)",i) ? num(g(v,"Payload (lbs.)",i)) + " lb" : ""], ["GVWR", g(v,"Gross vehicle weight rating (GVWR) (lbs.)",i) ? num(g(v,"Gross vehicle weight rating (GVWR) (lbs.)",i)) + " lb" : ""], ["Pickup box", g(v,"Pickup box cargo volume (cu.ft.)",i) ? g(v,"Pickup box cargo volume (cu.ft.)",i) + " cu ft" : ""], ["Cargo", g(v,"Interior cargo volume (cu.ft.)",i) ? g(v,"Interior cargo volume (cu.ft.)",i) + " cu ft" : ""], ["Seats", g(v,"Seating capacity",i)]];
   h += '<div class="tiles">' + tiles.filter(function(x){ return x[1]; }).map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + esc(x[1]) + "</div></div>"; }).join("") + "</div>";
   var nu = nextUp(v, i);
   h += '<div class="actions">' + (nu > -1 ? '<button class="btn" data-step="' + nu + '">What is the step up? <span class="pn">+' + money(price(v.trims[nu]) - price(t)) + ' to ' + esc(trimName(v, v.trims[nu])) + '</span></button>' : "") + '<button class="btn sec2" data-go="pickcmp">Compare with another trim</button></div>';
-  h += topFeatures(v, i);
   var hid = 0; SECS.forEach(function(sc){ hid += secRows(v, i, sc[0], "", false).hidden; });
-  h += '<input class="filter" id="tf" type="search" placeholder="Search this trim: heated seats, towing, wheels, warranty…" aria-label="Search this trim">';
   if (hid) h += '<div class="pills sm"><button class="pill" id="fullbtn" data-full="1" aria-pressed="' + S.full + '" data-lbl="Show ' + hid + ' empty rows (No / None)">' + (S.full ? "Hide empty rows" : "Show " + hid + " empty rows (No / None)") + "</button></div>";
   h += '<div id="sheetbody">' + sheetBody(v, i, "") + "</div>";
   return h;
@@ -744,7 +674,7 @@ document.addEventListener("click", function(e){
   var el = e.target.closest("[data-brand],[data-model],[data-trim],[data-year],[data-askyear],[data-go],[data-cmp],[data-diff],[data-step],[data-retry],[data-full]");
   if (!el) return;
   if (el.dataset.brand){ pickBrand(el.dataset.brand); return; }
-  if (el.dataset.go === "brands"){ BR = null; D = null; setTheme(null); S.q = ""; $("q").value = ""; $("q").placeholder = "Ask: Compass Limited towing, Charger Scat Pack, 1500 Laramie"; $("stamp").textContent = ""; $("foot").textContent = ""; render(); return; }
+  if (el.dataset.go === "brands"){ BR = null; D = null; setTheme(null); S.q = ""; $("q").value = ""; $("q").placeholder = "Find a model or trim: Compass Limited towing, Charger Scat Pack, 1500 Laramie"; $("stamp").textContent = ""; $("foot").textContent = ""; render(); return; }
   if (el.dataset.retry){ pickBrand(el.dataset.retry, true); return; }
   if (el.dataset.step){ S.via = true; S.ci = +el.dataset.step; S.view = "compare"; S.all = false; render(); return; }
   if (el.dataset.model){ S.from = ""; S.name = el.dataset.model; var ys = Object.keys(models()[S.name]).map(Number).sort(); if (!S.year || !models()[S.name][S.year]) S.year = ys[ys.length-1]; S.view = "model"; S.q = ""; $("q").value = ""; }
@@ -763,7 +693,11 @@ $("clear").addEventListener("click", function(){ S.q = ""; $("q").value = ""; re
 document.addEventListener("input", function(e){
   if (e.target.id !== "tf") return;
   var v = vehicle(S.name, S.year);
-  $("sheetbody").innerHTML = sheetBody(v, S.ti, e.target.value.trim().toLowerCase());
+  var fv = e.target.value.trim().toLowerCase();
+  $("sheetbody").innerHTML = sheetBody(v, S.ti, fv);
+  if (fv && !S.tfOn){ var hh = (document.querySelector("header.top").offsetHeight || 0) + (document.querySelector(".crumbs").offsetHeight || 0); window.scrollTo({ top: Math.max(0, $("sheetbody").getBoundingClientRect().top + window.scrollY - hh - 8), behavior: "smooth" }); }
+  S.tfOn = !!fv;
+  var fb = $("fullbtn"); if (fb) fb.parentNode.style.display = fv ? "none" : "";
 });
 
 (function(){
