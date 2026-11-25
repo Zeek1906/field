@@ -621,8 +621,9 @@ function setTheme(k){
 }
 function finishLoad(){
   var dt = new Date(D.scraped);
-  $("stamp").textContent = BR.site + " data, " + dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Chicago" });
-  $("foot").textContent = "Source: the Compare Models tool on " + BR.site + ". MSRP only; excludes destination, taxes and fees. Verify on " + BR.site + " before quoting." + BR.note;
+  $("stamp").textContent = BR.site + " data";
+  var ds = dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Chicago" });
+  $("foot").textContent = "Source: the Compare Models tool on " + BR.site + ". MSRP only; excludes destination, taxes and fees. Verify on " + BR.site + " before quoting." + BR.note + " Data as of " + ds + ".";
 }
 function detectBrand(q){
   var tk = tokens(q);
