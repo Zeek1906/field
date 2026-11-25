@@ -111,6 +111,18 @@ details.sec > summary .n { color: var(--muted); font-family: var(--font-body); f
 .filter { border-color: var(--accent); border-width: 2px; padding: 12px 14px; font-size: 16px; margin-top: 12px; }
 .pills.sm { margin: 8px 0 0; }
 .pills.sm .pill { font-size: 13.5px; padding: 6px 12px; }
+.sec.s-mechanical { --sc: #b45309; } .sec.s-exterior { --sc: #1d6fa5; } .sec.s-interior { --sc: #7c3aed; } .sec.s-safety { --sc: #15803d; }
+.sec.s-dimensions { --sc: #0f766e; } .sec.s-warranty { --sc: #5b6472; } .sec.s-standard { --sc: #be123c; } .sec.s-options { --sc: #4338ca; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sec.s-mechanical { --sc: #f0a35c; } :root:not([data-theme="light"]) .sec.s-exterior { --sc: #6cb4e8; } :root:not([data-theme="light"]) .sec.s-interior { --sc: #b79bf5; } :root:not([data-theme="light"]) .sec.s-safety { --sc: #6fd08a; } :root:not([data-theme="light"]) .sec.s-dimensions { --sc: #5dd0c4; } :root:not([data-theme="light"]) .sec.s-warranty { --sc: #aab3c0; } :root:not([data-theme="light"]) .sec.s-standard { --sc: #f27a94; } :root:not([data-theme="light"]) .sec.s-options { --sc: #9aa0f5; } }
+:root[data-theme="dark"] .sec.s-mechanical { --sc: #f0a35c; } :root[data-theme="dark"] .sec.s-exterior { --sc: #6cb4e8; } :root[data-theme="dark"] .sec.s-interior { --sc: #b79bf5; } :root[data-theme="dark"] .sec.s-safety { --sc: #6fd08a; } :root[data-theme="dark"] .sec.s-dimensions { --sc: #5dd0c4; } :root[data-theme="dark"] .sec.s-warranty { --sc: #aab3c0; } :root[data-theme="dark"] .sec.s-standard { --sc: #f27a94; } :root[data-theme="dark"] .sec.s-options { --sc: #9aa0f5; }
+details.sec[class*="s-"] { border-left: 7px solid var(--sc); }
+details.sec[class*="s-"] > summary { align-items: center; gap: 10px; }
+details.sec[class*="s-"] > summary .si { display: inline-flex; width: 34px; height: 34px; border-radius: 9px; align-items: center; justify-content: center; background: var(--sc); color: #fff; flex: none; }
+details.sec[class*="s-"] > summary .stt { flex: 1; line-height: 1.15; }
+details.sec[class*="s-"][open] { background: color-mix(in srgb, var(--sc) 5%, var(--surface)); }
+details.sec[class*="s-"][open] > summary { position: sticky; top: var(--stk, 190px); z-index: 6; background: color-mix(in srgb, var(--sc) 16%, var(--surface)); border-radius: 8px 12px 0 0; border-bottom: 2px solid var(--sc); }
+details.sec[class*="s-"] details.grp > summary { color: var(--sc); }
+details.sec[class*="s-"] details.grp { border-top-color: color-mix(in srgb, var(--sc) 30%, var(--line)); }
 details.grp { border-top: 1px solid var(--line); }
 details.grp:first-child { border-top: 0; }
 details.grp > summary { cursor: pointer; padding: 11px 0; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); font-weight: 700; display: flex; justify-content: space-between; list-style-position: inside; }
@@ -262,6 +274,17 @@ function viewModel(){
   return h + "</div>";
 }
 var FILLER = /^(no|none|n\/a|not available|not applicable|-|\u2014)$/i;
+var ICONS = {
+  mechanical: '<path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  exterior: '<path d="M3 15l2-5a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 10l2 5v3h-2.5M3 15v3h2.5M3 15h18"/><circle cx="7.5" cy="18" r="1.8"/><circle cx="16.5" cy="18" r="1.8"/>',
+  interior: '<path d="M8 4v8a3 3 0 0 0 3 3h7"/><path d="M8 4h2.5a2 2 0 0 1 2 2v3"/><path d="M11 15v5M17 15v5"/>',
+  safety: '<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/>',
+  dimensions: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5L10 15M10.5 9.5L12 11M13.5 6.5L16 9"/>',
+  warranty: '<circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5 5 2.5-1.5-7.5"/>',
+  standard: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  options: '<path d="M12 5v14M5 12h14"/>'
+};
+function secHead(key, label, n){ return '<summary><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[key] + '</svg></span><span class="stt">' + label + '</span><span class="n">' + n + "</span></summary>"; }
 function secRows(v, i, sec, f, full){
   var groups = {}, order = [], hidden = 0;
   v.rows.forEach(function(r){
@@ -300,7 +323,7 @@ function sheetBody(v, i, f){
   var h = "";
   SECS.forEach(function(s){
     var r = secRows(v, i, s[0], f, S.full); if (!r.count) return;
-    h += '<details class="sec"' + (f ? " open" : "") + "><summary>" + s[1] + ' <span class="n">' + r.count + "</span></summary><div class=\"in\">";
+    h += '<details class="sec s-' + s[0] + '"' + (f ? " open" : "") + ">" + secHead(s[0], s[1], r.count) + "<div class=\"in\">";
     r.order.forEach(function(k){
       var rowsH = r.groups[k].map(function(x){ return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + esc(fmtV(x[0], x[1])) + "</div></div>"; }).join("");
       h += '<details class="grp"' + (f || r.order.length === 1 ? " open" : "") + "><summary>" + esc(k) + ' <span class="n">' + r.groups[k].length + "</span></summary>" + rowsH + "</details>";
@@ -313,8 +336,8 @@ function sheetBody(v, i, f){
     if (f && !fmatch(f, p[0] + " " + (std(x) || x.charAt(0) === "S" ? "standard included equipment" : "optional available package"))) return;
     if (std(x) || x.charAt(0) === "S") st.push(p[0]); else op.push([p[0], x]);
   });
-  if (st.length) h += '<details class="sec"' + (f ? " open" : "") + "><summary>Standard and included equipment <span class=\"n\">" + st.length + '</span></summary><div class="in"><div class="chips mini">' + st.map(function(n){ return '<span class="chip">' + esc(n) + "</span>"; }).join("") + "</div></div></details>";
-  if (op.length) h += '<details class="sec"' + (f ? " open" : "") + "><summary>Available options and packages <span class=\"n\">" + op.length + '</span></summary><div class="in">' + op.map(function(x){ var p = priceOf(x[1]); return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + (p ? "+" + money(p) : "No charge") + "</div></div>"; }).join("") + "</div></details>";
+  if (st.length) h += '<details class="sec s-standard"' + (f ? " open" : "") + ">" + secHead("standard", "Standard and included equipment", st.length) + '<div class="in"><div class="chips mini">' + st.map(function(n){ return '<span class="chip">' + esc(n) + "</span>"; }).join("") + "</div></div></details>";
+  if (op.length) h += '<details class="sec s-options"' + (f ? " open" : "") + ">" + secHead("options", "Available options and packages", op.length) + '<div class="in">' + op.map(function(x){ var p = priceOf(x[1]); return '<div class="row"><div class="k">' + esc(x[0]) + '</div><div class="vv">' + (p ? "+" + money(p) : "No charge") + "</div></div>"; }).join("") + "</div></details>";
   if (!h) h = '<div class="empty">Nothing on this trim matches that. Try one word, like "warranty", "heated" or "wheels".</div>';
   return h;
 }
@@ -706,7 +729,9 @@ document.addEventListener("input", function(e){
   else render();
 })();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
-function setHH(){ var h = document.querySelector("header.top"); if (h) document.documentElement.style.setProperty("--hh", h.offsetHeight + "px"); }
+function setHH(){ var h = document.querySelector("header.top"), c = document.querySelector(".crumbs"); if (h) document.documentElement.style.setProperty("--hh", h.offsetHeight + "px"); if (h) document.documentElement.style.setProperty("--stk", (h.offsetHeight + (c ? c.offsetHeight : 0)) + "px"); }
+var cro = window.ResizeObserver ? new ResizeObserver(setHH) : null;
+new MutationObserver(function(){ setHH(); setTimeout(setHH, 150); if (cro){ cro.disconnect(); var c = document.querySelector(".crumbs"); if (c) cro.observe(c); } }).observe(document.getElementById("main"), { childList: true });
 setHH(); if (window.ResizeObserver) new ResizeObserver(setHH).observe(document.querySelector("header.top")); window.addEventListener("resize", setHH); window.addEventListener("load", setHH); if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHH);
 (function(){ var b = document.getElementById("totop"); function upd(){ b.classList.toggle("show", window.scrollY > 300); } window.addEventListener("scroll", upd, {passive:true}); upd(); b.addEventListener("click", function(){ var r = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; window.scrollTo({top:0, behavior: r ? "auto" : "smooth"}); }); })();
 </script>
