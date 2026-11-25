@@ -58,7 +58,7 @@ html[data-tb="fiat"] { --brand: #a6192e; --accent: #a6192e; --soft: #f6e1e4; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
 .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 56px; }
-header.top { position: sticky; top: 0; z-index: 10; background: var(--brand); color: #fff; padding: 12px 16px 12px; margin: 0 -16px; border-bottom: 0; }
+header.top { transition: top .22s ease; position: sticky; top: 0; z-index: 10; background: var(--brand); color: #fff; padding: 12px 16px 12px; margin: 0 -16px; border-bottom: 0; }
 .brandrow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
 h1 { font-family: var(--font-display); font-weight: 700; font-size: 26px; margin: 0; line-height: 1.1; }
 .stamp { font-size: 12.5px; color: rgba(255,255,255,.8); }
@@ -69,7 +69,7 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: 26px; margin
 .ask input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
 .ask button { font: 600 15px var(--font-body); padding: 0 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); cursor: pointer; }
 input:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.crumbs { position: sticky; top: var(--hh, 112px); z-index: 9; background: var(--bg); margin: 0 -16px 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.crumbs { flex-wrap: nowrap !important; transition: top .22s ease; position: sticky; top: var(--hv, 112px); z-index: 9; background: var(--bg); margin: 0 -16px 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
 .totop { position: fixed; right: 16px; bottom: 20px; z-index: 20; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--brand); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s, transform .2s; }
 .totop.show { opacity: 1; pointer-events: auto; transform: none; }
 .back { font: 600 14px var(--font-body); background: none; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--ink); cursor: pointer; }
@@ -120,6 +120,10 @@ details.sec[class*="s-"] > summary { align-items: center; gap: 10px; }
 details.sec[class*="s-"] > summary .si { display: inline-flex; width: 34px; height: 34px; border-radius: 9px; align-items: center; justify-content: center; background: var(--sc); color: #fff; flex: none; }
 details.sec[class*="s-"] > summary .stt { flex: 1; line-height: 1.15; }
 details.sec[class*="s-"][open] { background: color-mix(in srgb, var(--sc) 5%, var(--surface)); }
+.crumbs .ct { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+details.sec[class*="s-"][open] > summary { padding: 7px 12px; font-size: 18px; }
+details.sec[class*="s-"][open] > summary .si { width: 28px; height: 28px; border-radius: 8px; }
+details.sec[class*="s-"][open] > summary .si svg { width: 17px; height: 17px; }
 details.sec[class*="s-"][open] > summary { position: sticky; top: var(--stk, 190px); z-index: 6; background: color-mix(in srgb, var(--sc) 16%, var(--surface)); border-radius: 8px 12px 0 0; border-bottom: 2px solid var(--sc); }
 details.sec[class*="s-"] details.grp > summary { color: var(--sc); }
 details.sec[class*="s-"] details.grp { border-top-color: color-mix(in srgb, var(--sc) 30%, var(--line)); }
@@ -240,7 +244,7 @@ function crumbs(parts, back){
   var h = '<div class="crumbs">';
   if (back) h += '<button class="back" data-go="' + back + '">← Back</button>';
   if (back && back !== "brands") h += '<button class="back homebtn" data-go="brands" aria-label="Home: all brands" title="All brands"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg></button>';
-  return h + parts.map(esc).join(" › ") + "</div>";
+  return h + '<span class="ct">' + parts.map(esc).join(" › ") + "</span></div>";
 }
 function viewHome(){
   var m = models(), h = crumbs([BR.label], "brands") + '<h2 class="q">Which ' + BR.label + '?</h2><div class="list">';
@@ -729,7 +733,9 @@ document.addEventListener("input", function(e){
   else render();
 })();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
-function setHH(){ var h = document.querySelector("header.top"), c = document.querySelector(".crumbs"); if (h) document.documentElement.style.setProperty("--hh", h.offsetHeight + "px"); if (h) document.documentElement.style.setProperty("--stk", (h.offsetHeight + (c ? c.offsetHeight : 0)) + "px"); }
+var HDR_HID = false;
+function setHH(){ var h = document.querySelector("header.top"), c = document.querySelector(".crumbs"); if (!h) return; var hh = h.offsetHeight, hv = HDR_HID ? 0 : hh, R = document.documentElement.style; h.style.top = HDR_HID ? (-hh - 4) + "px" : "0px"; R.setProperty("--hh", hh + "px"); R.setProperty("--hv", hv + "px"); R.setProperty("--stk", (hv + (c ? c.offsetHeight : 0)) + "px"); }
+(function(){ var last = window.scrollY; window.addEventListener("scroll", function(){ var y = window.scrollY, d = y - last; if (Math.abs(d) < 8) return; var want = y > 140 && d > 0 && !(document.activeElement && document.activeElement.id === "q"); if (d < 0 || y < 60) want = false; last = y; if (want !== HDR_HID){ HDR_HID = want; setHH(); } }, { passive: true }); })();
 var cro = window.ResizeObserver ? new ResizeObserver(setHH) : null;
 new MutationObserver(function(){ setHH(); setTimeout(setHH, 150); if (cro){ cro.disconnect(); var c = document.querySelector(".crumbs"); if (c) cro.observe(c); } }).observe(document.getElementById("main"), { childList: true });
 setHH(); if (window.ResizeObserver) new ResizeObserver(setHH).observe(document.querySelector("header.top")); window.addEventListener("resize", setHH); window.addEventListener("load", setHH); if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHH);
